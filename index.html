@@ -15,6 +15,8 @@
       --text: #1e293b;
       --subtext: #64748b;
       --border: #e2e8f0;
+      --success: #15803d;
+      --success-bg: #dcfce7;
     }
     * {
       box-sizing: border-box;
@@ -34,11 +36,11 @@
     }
     header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     h1 {
-      font-size: 1.4rem;
-      margin: 0 0 6px 0;
+      font-size: 1.35rem;
+      margin: 0 0 4px 0;
       color: #0f172a;
     }
     p.subtitle {
@@ -46,6 +48,71 @@
       font-size: 0.85rem;
       color: var(--subtext);
     }
+
+    /* Modal 對話框 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+    .modal-desc {
+      font-size: 0.88rem;
+      color: var(--subtext);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .inst-btn {
+      padding: 14px 10px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .inst-btn:active, .inst-btn.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+      color: var(--primary);
+    }
+    .inst-sub {
+      font-size: 0.75rem;
+      color: var(--subtext);
+      font-weight: normal;
+    }
+
+    /* 主畫面卡片 */
     .card {
       background: var(--card-bg);
       border-radius: 14px;
@@ -62,59 +129,69 @@
       align-items: center;
       justify-content: space-between;
     }
-    select, button {
-      width: 100%;
-      padding: 13px;
-      border-radius: 10px;
-      border: 1px solid #cbd5e1;
-      font-size: 1rem;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
+    .tip-banner {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: #166534;
+      line-height: 1.6;
     }
-    select {
-      background: #fff url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="292.4"%20height="292.4"><path%20fill="%2364748b"%20d="M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z"/></svg>') no-repeat right 14px center;
-      background-size: 10px;
-      margin-bottom: 8px;
-      font-weight: 500;
+    
+    .string-btn-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .string-record-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .btn-record {
-      background: var(--primary);
-      color: white;
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
       border: none;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e2e8f0;
+      color: #334155;
     }
-    .btn-record:active {
-      opacity: 0.85;
+    .btn-record.target-btn {
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+    }
+    .btn-record.candidate-btn {
+      background: #fef2f2;
+      color: var(--secondary);
+      border: 1px solid #fecaca;
     }
     .btn-record.recording {
-      background: #d97706;
+      background: #d97706 !important;
+      color: white !important;
       animation: pulse 1.5s infinite;
     }
-    .btn-candidate {
-      background: var(--secondary);
+    .btn-record.recorded {
+      background: var(--success-bg) !important;
+      color: var(--success) !important;
+      border-color: #bbf7d0 !important;
     }
-    .status-badge {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: #e2e8f0;
-      color: #475569;
-      font-weight: normal;
-    }
-    .status-badge.ready {
-      background: #dcfce7;
-      color: #15803d;
-    }
+
     .meter-box {
       height: 6px;
       width: 100%;
       background: #e2e8f0;
       border-radius: 3px;
       overflow: hidden;
-      margin: 10px 0;
+      margin-top: 6px;
       display: none;
     }
     .meter-bar {
@@ -123,6 +200,7 @@
       background: var(--primary);
       transition: width 0.05s linear;
     }
+
     .chart-container {
       position: relative;
       width: 100%;
@@ -149,6 +227,15 @@
       color: var(--subtext);
       line-height: 1.5;
     }
+    .change-inst-btn {
+      font-size: 0.8rem;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+    }
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.7; }
@@ -158,102 +245,231 @@
 </head>
 <body>
 
+<!-- 樂器選擇對話框 (Modal) -->
+<div id="instrumentModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">請選擇測試樂器</div>
+    <div class="modal-desc">系統將根據樂器自動載入空弦音高與共鳴分析指標。</div>
+    <div class="instrument-grid" id="modalInstrumentGrid"></div>
+  </div>
+</div>
+
 <div class="container">
   <header>
     <h1>弦樂器音色分析比對</h1>
-    <p class="subtitle">聲學頻譜特徵採樣與客觀近似度評估</p>
+    <p class="subtitle">全弦聲學頻譜採樣與客觀近似度評估</p>
   </header>
 
-  <!-- 樂器選擇 -->
-  <div class="card">
-    <div class="card-title">1. 選擇樂器與測試弦</div>
-    <select id="instrumentSelect">
-      <option value="erhu_d4">二胡 - 內弦 (D4 / 293Hz)</option>
-      <option value="erhu_a4">二胡 - 外弦 (A4 / 440Hz)</option>
-      <option value="violin_g3">小提琴 - G3 (196Hz)</option>
-      <option value="violin_d4">小提琴 - D4 (293Hz)</option>
-      <option value="violin_a4">小提琴 - A4 (440Hz)</option>
-      <option value="violin_e5">小提琴 - E5 (659Hz)</option>
-      <option value="viola_c3">中提琴 - C3 (130Hz)</option>
-      <option value="cello_c2">大提琴 - C2 (65Hz)</option>
-      <option value="cello_g2">大提琴 - G2 (98Hz)</option>
-      <option value="guitar_e2">木吉他 - 6弦 (E2 / 82Hz)</option>
-      <option value="guitar_a2">木吉他 - 5弦 (A2 / 110Hz)</option>
-    </select>
-    <div class="tips">💡 建議將手機平放於桌上，麥克風距離琴體約 40～50 公分；拉奏均勻長音 3 秒，不加揉弦。</div>
-  </div>
-
-  <!-- 目標琴採樣 -->
+  <!-- 第 1 格：錄製 Tip 與目前樂器 -->
   <div class="card">
     <div class="card-title">
-      2. 目標琴音色指紋 (Target)
-      <span id="targetBadge" class="status-badge">尚未採樣</span>
+      <span>目前樂器：<b id="currentInstrumentText" style="color:var(--primary);">二胡</b></span>
+      <button class="change-inst-btn" id="reselectBtn">更換樂器</button>
     </div>
-    <div id="targetMeter" class="meter-box"><div id="targetBar" class="meter-bar"></div></div>
-    <button id="recordTargetBtn" class="btn-record">開始錄製目標音 (3秒)</button>
+    <div class="tip-banner">
+      <b>📌 錄製指引與注意事項：</b><br>
+      1. 手機平放於桌上，麥克風距離琴體約 <b>40～50 公分</b>。<br>
+      2. 點擊各弦按鈕後，請以勻速、中等力度拉奏空弦長音 3 秒。<br>
+      3. <b>請拉純淨長音，勿加揉弦（震音）</b>，確保擷取最純粹的箱體自然共鳴。<br>
+      4. 兩把琴皆完成所有空弦收音後，系統將自動比對並產出綜合分析報告。
+    </div>
   </div>
 
-  <!-- 候選琴採樣 -->
+  <!-- 第 2 格：目標琴音色指紋 -->
   <div class="card">
     <div class="card-title">
-      3. 待測候選琴 (Candidate)
-      <span id="candidateBadge" class="status-badge">尚未採樣</span>
+      目標琴音色指紋 (Target)
+      <span id="targetProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0/2 完成</span>
     </div>
-    <div id="candidateMeter" class="meter-box"><div id="candidateBar" class="meter-bar" style="background:var(--secondary);"></div></div>
-    <button id="recordCandidateBtn" class="btn-record btn-candidate">開始錄製候選音 (3秒)</button>
+    <div class="string-btn-grid" id="targetStringContainer"></div>
   </div>
 
-  <!-- 分析報告區塊 -->
+  <!-- 第 3 格：待測候選琴 -->
+  <div class="card">
+    <div class="card-title">
+      待測候選琴 (Candidate)
+      <span id="candidateProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0/2 完成</span>
+    </div>
+    <div class="string-btn-grid" id="candidateStringContainer"></div>
+  </div>
+
+  <!-- 第 4 格：分析報告區塊 -->
   <div id="resultCard" class="card" style="display: none;">
-    <div class="card-title">音色比對報告</div>
-    
+    <div class="card-title">全弦綜合音色比對報告</div>
     <div class="score-banner">
-      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">整體音色吻合度</div>
+      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">綜合音色吻合度</div>
       <div id="similarityScore" class="score-num">-- %</div>
       <div id="verdictText" style="font-size:0.85rem; color:#475569;">--</div>
     </div>
-
-    <div class="chart-container">
-      <canvas id="timbreRadarChart"></canvas>
-    </div>
-
+    <div class="chart-container"><canvas id="timbreRadarChart"></canvas></div>
     <div class="tips">
-      • <b>明亮度</b>：高頻泛音比例，數值高代表清脆、高音穿透力強。<br>
-      • <b>渾厚度</b>：低頻共鳴比例，數值高代表箱體感強、溫暖飽滿。<br>
-      • <b>延音共鳴</b>：能量衰減的平穩度，數值高代表共鳴悠長穩定。<br>
+      • <b>明亮度</b>：高頻泛音比例，數值高代表清亮通透、穿透力強。<br>
+      • <b>渾厚度</b>：低頻共鳴比例，數值高代表箱體共鳴大、聲音扎實溫暖。<br>
+      • <b>延音共鳴</b>：能量衰減的平穩度，數值高代表共鳴悠長平穩。<br>
       • <b>音質純淨</b>：諧波與摩擦雜訊之比，數值高代表擦弦雜音少。
     </div>
   </div>
 </div>
 
 <script>
-  let targetProfile = null;
-  let candidateProfile = null;
+  // 樂器設定庫
+  const INSTRUMENTS = {
+    erhu: {
+      name: '二胡',
+      strings: [
+        { id: 'd4', name: '內弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: '外弦', note: 'A4 / 440Hz' }
+      ]
+    },
+    violin: {
+      name: '小提琴',
+      strings: [
+        { id: 'g3', name: 'G 弦', note: 'G3 / 196Hz' },
+        { id: 'd4', name: 'D 弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: 'A 弦', note: 'A4 / 440Hz' },
+        { id: 'e5', name: 'E 弦', note: 'E5 / 659Hz' }
+      ]
+    },
+    viola: {
+      name: '中提琴',
+      strings: [
+        { id: 'c3', name: 'C 弦', note: 'C3 / 130Hz' },
+        { id: 'g3', name: 'G 弦', note: 'G3 / 196Hz' },
+        { id: 'd4', name: 'D 弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: 'A 弦', note: 'A4 / 440Hz' }
+      ]
+    },
+    cello: {
+      name: '大提琴',
+      strings: [
+        { id: 'c2', name: 'C 弦', note: 'C2 / 65Hz' },
+        { id: 'g2', name: 'G 弦', note: 'G2 / 98Hz' },
+        { id: 'd3', name: 'D 弦', note: 'D3 / 146Hz' },
+        { id: 'a3', name: 'A 弦', note: 'A3 / 220Hz' }
+      ]
+    },
+    guitar: {
+      name: '木吉他',
+      strings: [
+        { id: 'e2', name: '6 弦', note: 'E2 / 82Hz' },
+        { id: 'a2', name: '5 弦', note: 'A2 / 110Hz' },
+        { id: 'd3', name: '4 弦', note: 'D3 / 146Hz' },
+        { id: 'g3', name: '3 弦', note: 'G3 / 196Hz' }
+      ]
+    }
+  };
+
+  let currentKey = 'erhu';
+  let targetData = {};
+  let candidateData = {};
   let chartInstance = null;
 
-  const recordTargetBtn = document.getElementById('recordTargetBtn');
-  const recordCandidateBtn = document.getElementById('recordCandidateBtn');
-  const targetBadge = document.getElementById('targetBadge');
-  const candidateBadge = document.getElementById('candidateBadge');
-  const targetMeter = document.getElementById('targetMeter');
-  const targetBar = document.getElementById('targetBar');
-  const candidateMeter = document.getElementById('candidateMeter');
-  const candidateBar = document.getElementById('candidateBar');
+  const modal = document.getElementById('instrumentModal');
+  const modalGrid = document.getElementById('modalInstrumentGrid');
+  const currentInstText = document.getElementById('currentInstrumentText');
+  const reselectBtn = document.getElementById('reselectBtn');
+  const targetContainer = document.getElementById('targetStringContainer');
+  const candidateContainer = document.getElementById('candidateStringContainer');
+  const targetBadge = document.getElementById('targetProgressBadge');
+  const candidateBadge = document.getElementById('candidateProgressBadge');
   const resultCard = document.getElementById('resultCard');
 
-  async function captureAcoustics(meterBox, meterBar, btnElement) {
+  function initModal() {
+    modalGrid.innerHTML = '';
+    Object.keys(INSTRUMENTS).forEach(key => {
+      const inst = INSTRUMENTS[key];
+      const btn = document.createElement('button');
+      btn.className = `inst-btn ${key === currentKey ? 'active' : ''}`;
+      btn.innerHTML = `<span>${inst.name}</span><span class="inst-sub">${inst.strings.length} 條弦</span>`;
+      btn.onclick = () => selectInstrument(key);
+      modalGrid.appendChild(btn);
+    });
+  }
+
+  function selectInstrument(key) {
+    currentKey = key;
+    currentInstText.innerText = INSTRUMENTS[key].name;
+    modal.style.display = 'none';
+    resetAndRenderUI();
+  }
+
+  reselectBtn.onclick = () => {
+    initModal();
+    modal.style.display = 'flex';
+  };
+
+  function resetAndRenderUI() {
+    targetData = {};
+    candidateData = {};
+    resultCard.style.display = 'none';
+    updateBadges();
+
+    const inst = INSTRUMENTS[currentKey];
+    targetContainer.innerHTML = '';
+    candidateContainer.innerHTML = '';
+
+    inst.strings.forEach(s => {
+      targetContainer.appendChild(createStringRow(s, 'target'));
+      candidateContainer.appendChild(createStringRow(s, 'candidate'));
+    });
+  }
+
+  function createStringRow(s, type) {
+    const wrap = document.createElement('div');
+    const isTarget = type === 'target';
+    wrap.innerHTML = `
+      <div class="string-record-row">
+        <button id="${type}_btn_${s.id}" class="btn-record ${isTarget ? 'target-btn' : 'candidate-btn'}">
+          <span><b>${s.name}</b> (${s.note})</span>
+          <span id="${type}_status_${s.id}">點擊收音 (3秒)</span>
+        </button>
+      </div>
+      <div id="${type}_meter_${s.id}" class="meter-box">
+        <div id="${type}_bar_${s.id}" class="meter-bar" style="${!isTarget ? 'background:var(--secondary);' : ''}"></div>
+      </div>
+    `;
+
+    const btn = wrap.querySelector(`#${type}_btn_${s.id}`);
+    const meter = wrap.querySelector(`#${type}_meter_${s.id}`);
+    const bar = wrap.querySelector(`#${type}_bar_${s.id}`);
+    const status = wrap.querySelector(`#${type}_status_${s.id}`);
+
+    btn.onclick = async () => {
+      try {
+        const metrics = await runRecording(meter, bar, btn, status);
+        if (isTarget) targetData[s.id] = metrics;
+        else candidateData[s.id] = metrics;
+
+        btn.classList.add('recorded');
+        status.innerText = '✓ 已完成';
+        updateBadges();
+        checkAndEvaluate();
+      } catch (e) {
+        alert('無法啟用麥克風，請檢查瀏覽器設定！');
+        status.innerText = '點擊收音 (3秒)';
+        btn.classList.remove('recording');
+        btn.disabled = false;
+      }
+    };
+    return wrap;
+  }
+
+  function updateBadges() {
+    const total = INSTRUMENTS[currentKey].strings.length;
+    const tCount = Object.keys(targetData).length;
+    const cCount = Object.keys(candidateData).length;
+    targetBadge.innerText = `${tCount}/${total} 完成`;
+    candidateBadge.innerText = `${cCount}/${total} 完成`;
+  }
+
+  async function runRecording(meterBox, meterBar, btnElement, statusText) {
     meterBox.style.display = 'block';
     meterBar.style.width = '0%';
     btnElement.classList.add('recording');
     btnElement.disabled = true;
 
-    // 取得無壓縮、關閉所有系統降噪的音訊串流
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
-      }
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -265,16 +481,10 @@
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Float32Array(bufferLength);
     const timeDomainArray = new Float32Array(analyser.fftSize);
-
     const sampleRate = audioCtx.sampleRate;
     const binWidth = sampleRate / analyser.fftSize;
 
-    let totalCentroid = 0;
-    let totalWarmth = 0;
-    let totalPurity = 0;
-    let rmsList = [];
-    let frameCount = 0;
-
+    let totalCentroid = 0, totalWarmth = 0, totalPurity = 0, rmsList = [], frameCount = 0;
     const recordDuration = 3000;
     const startTime = Date.now();
 
@@ -283,57 +493,42 @@
         const elapsed = Date.now() - startTime;
         const progress = Math.min(100, (elapsed / recordDuration) * 100);
         meterBar.style.width = progress + '%';
-        btnElement.innerText = `錄音中... ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
+        statusText.innerText = `錄音中... ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
 
         analyser.getFloatFrequencyData(dataArray);
         analyser.getFloatTimeDomainData(timeDomainArray);
 
-        // 裁切中間穩定共鳴段 (0.5s ~ 2.5s)，排除起弓擦弦與殘響
         if (elapsed > 500 && elapsed < 2500) {
-          let sumAmp = 0;
-          let weightedSum = 0;
-          let lowFreqEnergy = 0;
-          let totalEnergy = 0;
-
+          let sumAmp = 0, weightedSum = 0, lowFreqEnergy = 0, totalEnergy = 0;
           for (let i = 0; i < bufferLength; i++) {
             let amp = Math.pow(10, dataArray[i] / 20);
             let freq = i * binWidth;
             sumAmp += amp;
             weightedSum += amp * freq;
-
             let pwr = amp * amp;
             totalEnergy += pwr;
-            if (freq < 1200) {
-              lowFreqEnergy += pwr;
-            }
+            if (freq < 1200) lowFreqEnergy += pwr;
           }
-
-          // 頻譜重心 (明亮度)
           let centroid = sumAmp > 0 ? (weightedSum / sumAmp) : 0;
           totalCentroid += centroid;
-
-          // 低頻佔比 (渾厚度)
           let warmth = totalEnergy > 0 ? (lowFreqEnergy / totalEnergy) : 0;
           totalWarmth += warmth;
 
-          // RMS (延音穩定度)
           let rmsSum = 0;
           for (let i = 0; i < timeDomainArray.length; i++) {
             rmsSum += timeDomainArray[i] * timeDomainArray[i];
           }
           rmsList.push(Math.sqrt(rmsSum / timeDomainArray.length));
 
-          // 峰值與純淨度
           let maxAmp = Math.max(...dataArray);
           let purity = Math.min(1, Math.max(0, (maxAmp + 80) / 70));
           totalPurity += purity;
-
           frameCount++;
         }
 
         if (elapsed >= recordDuration) {
           clearInterval(interval);
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach(t => t.stop());
           audioCtx.close();
           meterBox.style.display = 'none';
           btnElement.classList.remove('recording');
@@ -342,83 +537,63 @@
           const avgCentroid = totalCentroid / (frameCount || 1);
           const avgWarmth = totalWarmth / (frameCount || 1);
           const avgPurity = totalPurity / (frameCount || 1);
-
           const avgRms = rmsList.reduce((a, b) => a + b, 0) / (rmsList.length || 1);
           const stdRms = Math.sqrt(rmsList.reduce((acc, val) => acc + Math.pow(val - avgRms, 2), 0) / (rmsList.length || 1));
           const resonance = Math.max(0, Math.min(1, 1 - (stdRms / (avgRms + 1e-6))));
 
-          // 歸一化數值至 10~95 區間
-          const normBrightness = Math.min(95, Math.max(10, (avgCentroid / 30)));
-          const normWarmth = Math.min(95, Math.max(10, avgWarmth * 110));
-          const normResonance = Math.min(95, Math.max(10, resonance * 95));
-          const normPurity = Math.min(95, Math.max(10, avgPurity * 95));
-
           resolve({
-            brightness: Math.round(normBrightness),
-            warmth: Math.round(normWarmth),
-            resonance: Math.round(normResonance),
-            purity: Math.round(normPurity)
+            brightness: Math.round(Math.min(95, Math.max(10, avgCentroid / 30))),
+            warmth: Math.round(Math.min(95, Math.max(10, avgWarmth * 110))),
+            resonance: Math.round(Math.min(95, Math.max(10, resonance * 95))),
+            purity: Math.round(Math.min(95, Math.max(10, avgPurity * 95)))
           });
         }
       }, 50);
     });
   }
 
-  recordTargetBtn.addEventListener('click', async () => {
-    try {
-      targetProfile = await captureAcoustics(targetMeter, targetBar, recordTargetBtn);
-      recordTargetBtn.innerText = "重新錄製目標音 (3秒)";
-      targetBadge.innerText = "已建檔";
-      targetBadge.classList.add('ready');
-      checkAndRender();
-    } catch (e) {
-      alert("無法啟用麥克風，請檢查瀏覽器設定並允許麥克風權限！");
-      recordTargetBtn.innerText = "開始錄製目標音 (3秒)";
-      recordTargetBtn.disabled = false;
+  function checkAndEvaluate() {
+    const totalStrings = INSTRUMENTS[currentKey].strings.length;
+    if (Object.keys(targetData).length !== totalStrings || Object.keys(candidateData).length !== totalStrings) {
+      return;
     }
-  });
-
-  recordCandidateBtn.addEventListener('click', async () => {
-    try {
-      candidateProfile = await captureAcoustics(candidateMeter, candidateBar, recordCandidateBtn);
-      recordCandidateBtn.innerText = "重新錄製候選音 (3秒)";
-      candidateBadge.innerText = "已採樣";
-      candidateBadge.classList.add('ready');
-      checkAndRender();
-    } catch (e) {
-      alert("無法啟用麥克風，請檢查瀏覽器設定並允許麥克風權限！");
-      recordCandidateBtn.innerText = "開始錄製候選音 (3秒)";
-      recordCandidateBtn.disabled = false;
-    }
-  });
-
-  function checkAndRender() {
-    if (!targetProfile || !candidateProfile) return;
 
     resultCard.style.display = 'block';
 
-    const t = targetProfile;
-    const c = candidateProfile;
+    function getAverageProfile(dataObj) {
+      const keys = Object.keys(dataObj);
+      let b = 0, w = 0, r = 0, p = 0;
+      keys.forEach(k => {
+        b += dataObj[k].brightness;
+        w += dataObj[k].warmth;
+        r += dataObj[k].resonance;
+        p += dataObj[k].purity;
+      });
+      return {
+        brightness: Math.round(b / keys.length),
+        warmth: Math.round(w / keys.length),
+        resonance: Math.round(r / keys.length),
+        purity: Math.round(p / keys.length)
+      };
+    }
+
+    const t = getAverageProfile(targetData);
+    const c = getAverageProfile(candidateData);
 
     const diffB = Math.abs(t.brightness - c.brightness);
     const diffW = Math.abs(t.warmth - c.warmth);
     const diffR = Math.abs(t.resonance - c.resonance);
     const diffP = Math.abs(t.purity - c.purity);
-
     const avgDiff = (diffB + diffW + diffR + diffP) / 4;
-    const similarity = Math.max(0, Math.min(100, Math.round(100 - avgDiff * 1.1)));
+    const similarity = Math.max(0, Math.min(100, Math.round(100 - avgDiff * 1.15)));
 
     document.getElementById('similarityScore').innerText = `${similarity} %`;
 
-    let verdict = "音色相當吻合，頻譜共鳴結構高度一致。";
+    let verdict = '各弦頻譜結構均勻，音色與目標琴高度吻合。';
     if (similarity < 82) {
-      if (c.brightness > t.brightness + 8) {
-        verdict = "候選琴高頻更突出，聽感較目標琴清亮透徹。";
-      } else if (c.warmth > t.warmth + 8) {
-        verdict = "候選琴低頻共鳴豐富，聽感較目標琴溫暖渾厚。";
-      } else {
-        verdict = "兩把琴頻譜結構有所不同，聽感風格有區別。";
-      }
+      if (c.brightness > t.brightness + 7) verdict = '候選琴高頻更為突出，整體聽感較目標琴清亮透徹。';
+      else if (c.warmth > t.warmth + 7) verdict = '候選琴低頻共鳴豐滿，整體聽感較目標琴更溫暖渾厚。';
+      else verdict = '兩把琴在共鳴頻譜結構上有明顯差異。';
     }
     document.getElementById('verdictText').innerText = verdict;
 
@@ -463,15 +638,15 @@
               pointLabels: { font: { size: 12, weight: '600' } }
             }
           },
-          plugins: {
-            legend: { position: 'bottom' }
-          }
+          plugins: { legend: { position: 'bottom' } }
         }
       });
     }
 
     resultCard.scrollIntoView({ behavior: 'smooth' });
   }
+
+  initModal();
 </script>
 </body>
 </html>
