@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>弦樂器音色分析與比對系統</title>
+  <!-- Chart.js 繪製雷達圖 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #1e88e5;
+      --secondary: #e53935;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --subtext: #64748b;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 6px 0;
+      color: #0f172a;
+    }
+    p.subtitle {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    select, button {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 1rem;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    select {
+      background: #fff url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="292.4"%20height="292.4"><path%20fill="%2364748b"%20d="M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z"/></svg>') no-repeat right 14px center;
+      background-size: 10px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .btn-record {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-record:active {
+      opacity: 0.85;
+    }
+    .btn-record.recording {
+      background: #d97706;
+      animation: pulse 1.5s infinite;
+    }
+    .btn-candidate {
+      background: var(--secondary);
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #e2e8f0;
+      color: #475569;
+      font-weight: normal;
+    }
+    .status-badge.ready {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .meter-box {
+      height: 6px;
+      width: 100%;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 10px 0;
+      display: none;
+    }
+    .meter-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.05s linear;
+    }
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      margin: 10px auto 16px auto;
+    }
+    .score-banner {
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      background: #eff6ff;
+      margin-bottom: 16px;
+      border: 1px solid #bfdbfe;
+    }
+    .score-num {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+      margin: 6px 0;
+    }
+    .tips {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      line-height: 1.5;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>弦樂器音色分析比對</h1>
+    <p class="subtitle">聲學頻譜特徵採樣與客觀近似度評估</p>
+  </header>
+
+  <!-- 樂器選擇 -->
+  <div class="card">
+    <div class="card-title">1. 選擇樂器與測試弦</div>
+    <select id="instrumentSelect">
+      <option value="erhu_d4">二胡 - 內弦 (D4 / 293Hz)</option>
+      <option value="erhu_a4">二胡 - 外弦 (A4 / 440Hz)</option>
+      <option value="violin_g3">小提琴 - G3 (196Hz)</option>
+      <option value="violin_d4">小提琴 - D4 (293Hz)</option>
+      <option value="violin_a4">小提琴 - A4 (440Hz)</option>
+      <option value="violin_e5">小提琴 - E5 (659Hz)</option>
+      <option value="viola_c3">中提琴 - C3 (130Hz)</option>
+      <option value="cello_c2">大提琴 - C2 (65Hz)</option>
+      <option value="cello_g2">大提琴 - G2 (98Hz)</option>
+      <option value="guitar_e2">木吉他 - 6弦 (E2 / 82Hz)</option>
+      <option value="guitar_a2">木吉他 - 5弦 (A2 / 110Hz)</option>
+    </select>
+    <div class="tips">💡 建議將手機平放於桌上，麥克風距離琴體約 40～50 公分；拉奏均勻長音 3 秒，不加揉弦。</div>
+  </div>
+
+  <!-- 目標琴採樣 -->
+  <div class="card">
+    <div class="card-title">
+      2. 目標琴音色指紋 (Target)
+      <span id="targetBadge" class="status-badge">尚未採樣</span>
+    </div>
+    <div id="targetMeter" class="meter-box"><div id="targetBar" class="meter-bar"></div></div>
+    <button id="recordTargetBtn" class="btn-record">開始錄製目標音 (3秒)</button>
+  </div>
+
+  <!-- 候選琴採樣 -->
+  <div class="card">
+    <div class="card-title">
+      3. 待測候選琴 (Candidate)
+      <span id="candidateBadge" class="status-badge">尚未採樣</span>
+    </div>
+    <div id="candidateMeter" class="meter-box"><div id="candidateBar" class="meter-bar" style="background:var(--secondary);"></div></div>
+    <button id="recordCandidateBtn" class="btn-record btn-candidate">開始錄製候選音 (3秒)</button>
+  </div>
+
+  <!-- 分析報告區塊 -->
+  <div id="resultCard" class="card" style="display: none;">
+    <div class="card-title">音色比對報告</div>
+    
+    <div class="score-banner">
+      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">整體音色吻合度</div>
+      <div id="similarityScore" class="score-num">-- %</div>
+      <div id="verdictText" style="font-size:0.85rem; color:#475569;">--</div>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="timbreRadarChart"></canvas>
+    </div>
+
+    <div class="tips">
+      • <b>明亮度</b>：高頻泛音比例，數值高代表清脆、高音穿透力強。<br>
+      • <b>渾厚度</b>：低頻共鳴比例，數值高代表箱體感強、溫暖飽滿。<br>
+      • <b>延音共鳴</b>：能量衰減的平穩度，數值高代表共鳴悠長穩定。<br>
+      • <b>音質純淨</b>：諧波與摩擦雜訊之比，數值高代表擦弦雜音少。
+    </div>
+  </div>
+</div>
+
+<script>
+  let targetProfile = null;
+  let candidateProfile = null;
+  let chartInstance = null;
+
+  const recordTargetBtn = document.getElementById('recordTargetBtn');
+  const recordCandidateBtn = document.getElementById('recordCandidateBtn');
+  const targetBadge = document.getElementById('targetBadge');
+  const candidateBadge = document.getElementById('candidateBadge');
+  const targetMeter = document.getElementById('targetMeter');
+  const targetBar = document.getElementById('targetBar');
+  const candidateMeter = document.getElementById('candidateMeter');
+  const candidateBar = document.getElementById('candidateBar');
+  const resultCard = document.getElementById('resultCard');
+
+  async function captureAcoustics(meterBox, meterBar, btnElement) {
+    meterBox.style.display = 'block';
+    meterBar.style.width = '0%';
+    btnElement.classList.add('recording');
+    btnElement.disabled = true;
+
+    // 取得無壓縮、關閉所有系統降噪的音訊串流
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      }
+    });
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Float32Array(bufferLength);
+    const timeDomainArray = new Float32Array(analyser.fftSize);
+
+    const sampleRate = audioCtx.sampleRate;
+    const binWidth = sampleRate / analyser.fftSize;
+
+    let totalCentroid = 0;
+    let totalWarmth = 0;
+    let totalPurity = 0;
+    let rmsList = [];
+    let frameCount = 0;
+
+    const recordDuration = 3000;
+    const startTime = Date.now();
+
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(100, (elapsed / recordDuration) * 100);
+        meterBar.style.width = progress + '%';
+        btnElement.innerText = `錄音中... ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
+
+        analyser.getFloatFrequencyData(dataArray);
+        analyser.getFloatTimeDomainData(timeDomainArray);
+
+        // 裁切中間穩定共鳴段 (0.5s ~ 2.5s)，排除起弓擦弦與殘響
+        if (elapsed > 500 && elapsed < 2500) {
+          let sumAmp = 0;
+          let weightedSum = 0;
+          let lowFreqEnergy = 0;
+          let totalEnergy = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            let amp = Math.pow(10, dataArray[i] / 20);
+            let freq = i * binWidth;
+            sumAmp += amp;
+            weightedSum += amp * freq;
+
+            let pwr = amp * amp;
+            totalEnergy += pwr;
+            if (freq < 1200) {
+              lowFreqEnergy += pwr;
+            }
+          }
+
+          // 頻譜重心 (明亮度)
+          let centroid = sumAmp > 0 ? (weightedSum / sumAmp) : 0;
+          totalCentroid += centroid;
+
+          // 低頻佔比 (渾厚度)
+          let warmth = totalEnergy > 0 ? (lowFreqEnergy / totalEnergy) : 0;
+          totalWarmth += warmth;
+
+          // RMS (延音穩定度)
+          let rmsSum = 0;
+          for (let i = 0; i < timeDomainArray.length; i++) {
+            rmsSum += timeDomainArray[i] * timeDomainArray[i];
+          }
+          rmsList.push(Math.sqrt(rmsSum / timeDomainArray.length));
+
+          // 峰值與純淨度
+          let maxAmp = Math.max(...dataArray);
+          let purity = Math.min(1, Math.max(0, (maxAmp + 80) / 70));
+          totalPurity += purity;
+
+          frameCount++;
+        }
+
+        if (elapsed >= recordDuration) {
+          clearInterval(interval);
+          stream.getTracks().forEach(track => track.stop());
+          audioCtx.close();
+          meterBox.style.display = 'none';
+          btnElement.classList.remove('recording');
+          btnElement.disabled = false;
+
+          const avgCentroid = totalCentroid / (frameCount || 1);
+          const avgWarmth = totalWarmth / (frameCount || 1);
+          const avgPurity = totalPurity / (frameCount || 1);
+
+          const avgRms = rmsList.reduce((a, b) => a + b, 0) / (rmsList.length || 1);
+          const stdRms = Math.sqrt(rmsList.reduce((acc, val) => acc + Math.pow(val - avgRms, 2), 0) / (rmsList.length || 1));
+          const resonance = Math.max(0, Math.min(1, 1 - (stdRms / (avgRms + 1e-6))));
+
+          // 歸一化數值至 10~95 區間
+          const normBrightness = Math.min(95, Math.max(10, (avgCentroid / 30)));
+          const normWarmth = Math.min(95, Math.max(10, avgWarmth * 110));
+          const normResonance = Math.min(95, Math.max(10, resonance * 95));
+          const normPurity = Math.min(95, Math.max(10, avgPurity * 95));
+
+          resolve({
+            brightness: Math.round(normBrightness),
+            warmth: Math.round(normWarmth),
+            resonance: Math.round(normResonance),
+            purity: Math.round(normPurity)
+          });
+        }
+      }, 50);
+    });
+  }
+
+  recordTargetBtn.addEventListener('click', async () => {
+    try {
+      targetProfile = await captureAcoustics(targetMeter, targetBar, recordTargetBtn);
+      recordTargetBtn.innerText = "重新錄製目標音 (3秒)";
+      targetBadge.innerText = "已建檔";
+      targetBadge.classList.add('ready');
+      checkAndRender();
+    } catch (e) {
+      alert("無法啟用麥克風，請檢查瀏覽器設定並允許麥克風權限！");
+      recordTargetBtn.innerText = "開始錄製目標音 (3秒)";
+      recordTargetBtn.disabled = false;
+    }
+  });
+
+  recordCandidateBtn.addEventListener('click', async () => {
+    try {
+      candidateProfile = await captureAcoustics(candidateMeter, candidateBar, recordCandidateBtn);
+      recordCandidateBtn.innerText = "重新錄製候選音 (3秒)";
+      candidateBadge.innerText = "已採樣";
+      candidateBadge.classList.add('ready');
+      checkAndRender();
+    } catch (e) {
+      alert("無法啟用麥克風，請檢查瀏覽器設定並允許麥克風權限！");
+      recordCandidateBtn.innerText = "開始錄製候選音 (3秒)";
+      recordCandidateBtn.disabled = false;
+    }
+  });
+
+  function checkAndRender() {
+    if (!targetProfile || !candidateProfile) return;
+
+    resultCard.style.display = 'block';
+
+    const t = targetProfile;
+    const c = candidateProfile;
+
+    const diffB = Math.abs(t.brightness - c.brightness);
+    const diffW = Math.abs(t.warmth - c.warmth);
+    const diffR = Math.abs(t.resonance - c.resonance);
+    const diffP = Math.abs(t.purity - c.purity);
+
+    const avgDiff = (diffB + diffW + diffR + diffP) / 4;
+    const similarity = Math.max(0, Math.min(100, Math.round(100 - avgDiff * 1.1)));
+
+    document.getElementById('similarityScore').innerText = `${similarity} %`;
+
+    let verdict = "音色相當吻合，頻譜共鳴結構高度一致。";
+    if (similarity < 82) {
+      if (c.brightness > t.brightness + 8) {
+        verdict = "候選琴高頻更突出，聽感較目標琴清亮透徹。";
+      } else if (c.warmth > t.warmth + 8) {
+        verdict = "候選琴低頻共鳴豐富，聽感較目標琴溫暖渾厚。";
+      } else {
+        verdict = "兩把琴頻譜結構有所不同，聽感風格有區別。";
+      }
+    }
+    document.getElementById('verdictText').innerText = verdict;
+
+    const ctx = document.getElementById('timbreRadarChart').getContext('2d');
+    const chartData = {
+      labels: ['明亮度 (高頻)', '渾厚度 (低頻共鳴)', '延音共鳴 (穩定度)', '音質純淨度'],
+      datasets: [
+        {
+          label: '目標琴 (Target)',
+          data: [t.brightness, t.warmth, t.resonance, t.purity],
+          borderColor: '#1e88e5',
+          backgroundColor: 'rgba(30, 136, 229, 0.2)',
+          borderWidth: 2,
+          pointBackgroundColor: '#1e88e5'
+        },
+        {
+          label: '候選琴 (Candidate)',
+          data: [c.brightness, c.warmth, c.resonance, c.purity],
+          borderColor: '#e53935',
+          backgroundColor: 'rgba(229, 57, 53, 0.15)',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          pointBackgroundColor: '#e53935'
+        }
+      ]
+    };
+
+    if (chartInstance) {
+      chartInstance.data = chartData;
+      chartInstance.update();
+    } else {
+      chartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: chartData,
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 25, display: false },
+              pointLabels: { font: { size: 12, weight: '600' } }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    resultCard.scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
