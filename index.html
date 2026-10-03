@@ -17,6 +17,8 @@
       --border: #e2e8f0;
       --success: #15803d;
       --success-bg: #dcfce7;
+      --prep: #d97706;
+      --prep-bg: #fef3c7;
     }
     * {
       box-sizing: border-box;
@@ -174,11 +176,23 @@
       color: var(--secondary);
       border: 1px solid #fecaca;
     }
-    .btn-record.recording {
-      background: #d97706 !important;
-      color: white !important;
-      animation: pulse 1.5s infinite;
+
+    /* 倒數 5 秒預備狀態 (黃) */
+    .btn-record.preparing {
+      background: var(--prep-bg) !important;
+      color: var(--prep) !important;
+      border: 1px solid #fde68a !important;
+      animation: pulse 1s infinite;
     }
+
+    /* 正式錄音 3 秒狀態 (紅) */
+    .btn-record.recording {
+      background: #ef4444 !important;
+      color: white !important;
+      animation: pulse 1s infinite;
+    }
+
+    /* 錄音完成狀態 (綠) */
     .btn-record.recorded {
       background: var(--success-bg) !important;
       color: var(--success) !important;
@@ -269,9 +283,10 @@
     <div class="tip-banner">
       <b>📌 錄製指引與注意事項：</b><br>
       1. 手機平放於桌上，麥克風距離琴體約 <b>40～50 公分</b>。<br>
-      2. 點擊各弦按鈕後，請以勻速、中等力度拉奏空弦長音 3 秒。<br>
-      3. <b>請拉純淨長音，勿加揉弦（震音）</b>，確保擷取最純粹的箱體自然共鳴。<br>
-      4. 兩把琴皆完成所有空弦收音後，系統將自動比對並產出綜合分析報告。
+      2. 點擊收音後有 <b>5 秒預備時間</b>，請就位並架好琴弓。<br>
+      3. 倒數結束轉為紅燈時，請以勻速、中等力度拉奏空弦長音 3 秒。<br>
+      4. <b>請拉純淨長音，勿加揉弦（震音）</b>，確保擷取最純粹的箱體自然共鳴。<br>
+      5. 兩把琴完成所有空弦收音後，系統將自動比對並產出綜合分析報告。
     </div>
   </div>
 
@@ -312,7 +327,6 @@
 </div>
 
 <script>
-  // 樂器設定庫
   const INSTRUMENTS = {
     erhu: {
       name: '二胡',
@@ -421,7 +435,7 @@
       <div class="string-record-row">
         <button id="${type}_btn_${s.id}" class="btn-record ${isTarget ? 'target-btn' : 'candidate-btn'}">
           <span><b>${s.name}</b> (${s.note})</span>
-          <span id="${type}_status_${s.id}">點擊收音 (3秒)</span>
+          <span id="${type}_status_${s.id}">點擊收音</span>
         </button>
       </div>
       <div id="${type}_meter_${s.id}" class="meter-box">
@@ -436,18 +450,19 @@
 
     btn.onclick = async () => {
       try {
-        const metrics = await runRecording(meter, bar, btn, status);
+        const metrics = await runRecordingWithPreparation(meter, bar, btn, status);
         if (isTarget) targetData[s.id] = metrics;
         else candidateData[s.id] = metrics;
 
+        btn.classList.remove('preparing', 'recording');
         btn.classList.add('recorded');
         status.innerText = '✓ 已完成';
         updateBadges();
         checkAndEvaluate();
       } catch (e) {
         alert('無法啟用麥克風，請檢查瀏覽器設定！');
-        status.innerText = '點擊收音 (3秒)';
-        btn.classList.remove('recording');
+        status.innerText = '點擊收音';
+        btn.classList.remove('preparing', 'recording');
         btn.disabled = false;
       }
     };
@@ -462,15 +477,38 @@
     candidateBadge.innerText = `${cCount}/${total} 完成`;
   }
 
-  async function runRecording(meterBox, meterBar, btnElement, statusText) {
-    meterBox.style.display = 'block';
-    meterBar.style.width = '0%';
-    btnElement.classList.add('recording');
+  // 結合 5 秒預備倒數與 3 秒聲學採樣
+  async function runRecordingWithPreparation(meterBox, meterBar, btnElement, statusText) {
     btnElement.disabled = true;
 
+    // 先取得麥克風授權（若使用者首次使用，可在此時允許，避免佔用倒數時間）
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
+
+    // 階段 1：5 秒預備倒數 (黃燈)
+    btnElement.classList.remove('recorded');
+    btnElement.classList.add('preparing');
+    let prepSeconds = 5;
+    statusText.innerText = `準備中 ${prepSeconds}s...`;
+
+    await new Promise((resolve) => {
+      const prepInterval = setInterval(() => {
+        prepSeconds--;
+        if (prepSeconds > 0) {
+          statusText.innerText = `準備中 ${prepSeconds}s...`;
+        } else {
+          clearInterval(prepInterval);
+          resolve();
+        }
+      }, 1000);
+    });
+
+    // 階段 2：正式 3 秒收音 (紅燈)
+    btnElement.classList.remove('preparing');
+    btnElement.classList.add('recording');
+    meterBox.style.display = 'block';
+    meterBar.style.width = '0%';
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioCtx.createMediaStreamSource(stream);
@@ -489,16 +527,17 @@
     const startTime = Date.now();
 
     return new Promise((resolve) => {
-      const interval = setInterval(() => {
+      const recordInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(100, (elapsed / recordDuration) * 100);
         meterBar.style.width = progress + '%';
-        statusText.innerText = `錄音中... ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
+        statusText.innerText = `錄音中 ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
 
         analyser.getFloatFrequencyData(dataArray);
         analyser.getFloatTimeDomainData(timeDomainArray);
 
-        if (elapsed > 500 && elapsed < 2500) {
+        // 取中間 0.4s ~ 2.6s 最平穩振動段
+        if (elapsed > 400 && elapsed < 2600) {
           let sumAmp = 0, weightedSum = 0, lowFreqEnergy = 0, totalEnergy = 0;
           for (let i = 0; i < bufferLength; i++) {
             let amp = Math.pow(10, dataArray[i] / 20);
@@ -527,7 +566,7 @@
         }
 
         if (elapsed >= recordDuration) {
-          clearInterval(interval);
+          clearInterval(recordInterval);
           stream.getTracks().forEach(t => t.stop());
           audioCtx.close();
           meterBox.style.display = 'none';
