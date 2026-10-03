@@ -9,6 +9,7 @@
   <style>
     :root {
       --primary: #1e88e5;
+      --primary-dark: #1565c0;
       --secondary: #e53935;
       --bg: #f8fafc;
       --card-bg: #ffffff;
@@ -19,6 +20,8 @@
       --success-bg: #dcfce7;
       --prep: #d97706;
       --prep-bg: #fef3c7;
+      --melody: #059669;
+      --melody-bg: #ecfdf5;
     }
     * {
       box-sizing: border-box;
@@ -35,66 +38,57 @@
     .container {
       width: 100%;
       max-width: 680px;
+      padding-bottom: 60px;
     }
     header {
       text-align: center;
       margin-bottom: 16px;
     }
     h1 {
-      font-size: 1.45rem;
+      font-size: 1.4rem;
       margin: 0 0 4px 0;
       color: #0f172a;
     }
     p.subtitle {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--subtext);
     }
 
-    /* Modal 對話框 */
+    /* 通用彈窗遮罩 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       z-index: 1000;
     }
     .modal-box {
       background: #ffffff;
       width: 100%;
-      max-width: 440px;
-      border-radius: 16px;
+      max-width: 460px;
+      border-radius: 18px;
       padding: 24px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
     }
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #0f172a;
-    }
-    .modal-desc {
-      font-size: 0.9rem;
-      color: var(--subtext);
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
+
+    /* 樂器選擇對話框 */
     .instrument-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 16px;
+      margin: 16px 0;
     }
     .inst-btn {
-      padding: 15px 10px;
-      border-radius: 10px;
+      padding: 14px 10px;
+      border-radius: 12px;
       border: 2px solid var(--border);
       background: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -108,55 +102,62 @@
       background: #eff6ff;
       color: var(--primary);
     }
-    .inst-sub {
-      font-size: 0.8rem;
-      color: var(--subtext);
-      font-weight: normal;
-    }
 
-    /* 主畫面卡片 */
+    /* 主卡片區塊 */
     .card {
       background: var(--card-bg);
       border-radius: 14px;
-      padding: 20px;
+      padding: 18px;
       margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
     }
     .card-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-clear {
+      font-size: 0.8rem;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-clear:active { background: #fecaca; }
+
     .tip-banner {
       background: #f0fdf4;
       border-left: 4px solid var(--success);
-      padding: 14px 16px;
+      padding: 14px;
       border-radius: 8px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: #166534;
       line-height: 1.6;
     }
-    
+
     .string-btn-grid {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    .string-record-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
     .btn-record {
-      flex: 1;
-      padding: 14px 16px;
+      width: 100%;
+      padding: 13px 16px;
       border-radius: 10px;
       border: none;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
@@ -176,23 +177,24 @@
       color: var(--secondary);
       border: 1px solid #fecaca;
     }
+    .btn-record.melody-btn {
+      background: var(--melody-bg);
+      color: var(--melody);
+      border: 1px dashed #6ee7b7;
+    }
 
-    /* 倒數 5 秒預備狀態 (黃) */
+    /* 錄音三態 */
     .btn-record.preparing {
       background: var(--prep-bg) !important;
       color: var(--prep) !important;
       border: 1px solid #fde68a !important;
       animation: pulse 1s infinite;
     }
-
-    /* 正式錄音 3 秒狀態 (紅) */
     .btn-record.recording {
       background: #ef4444 !important;
       color: white !important;
       animation: pulse 1s infinite;
     }
-
-    /* 錄音完成狀態 (綠) */
     .btn-record.recorded {
       background: var(--success-bg) !important;
       color: var(--success) !important;
@@ -200,10 +202,10 @@
     }
 
     .meter-box {
-      height: 7px;
+      height: 6px;
       width: 100%;
       background: #e2e8f0;
-      border-radius: 4px;
+      border-radius: 3px;
       overflow: hidden;
       margin-top: 6px;
       display: none;
@@ -215,54 +217,105 @@
       transition: width 0.05s linear;
     }
 
-    /* 雷達圖尺寸放大 */
+    /* 底部主分析按鈕 */
+    .btn-analyze-main {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(30, 136, 229, 0.35);
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-analyze-main:disabled {
+      background: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #94a3b8;
+    }
+
+    /* 2秒 AI 計算彈窗 */
+    .calc-box {
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #e2e8f0;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      margin: 0 auto 20px auto;
+      animation: spin 0.8s linear infinite;
+    }
+    .calc-progress-box {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .calc-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.05s linear;
+    }
+
+    /* 分析報告彈窗 */
+    .report-modal-box {
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+    }
     .chart-container {
       position: relative;
       width: 100%;
-      max-width: 580px;
+      max-width: 540px;
       min-height: 380px;
-      margin: 14px auto 20px auto;
+      margin: 10px auto;
     }
     .score-banner {
       text-align: center;
-      padding: 18px;
+      padding: 14px;
       border-radius: 12px;
       background: #eff6ff;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
       border: 1px solid #bfdbfe;
     }
     .score-num {
-      font-size: 2.8rem;
+      font-size: 2.6rem;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.1;
-      margin: 8px 0;
+      margin: 6px 0;
     }
-    .verdict-box {
-      font-size: 0.95rem;
+    .btn-back {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      background: #f1f5f9;
       color: #334155;
-      font-weight: 500;
-    }
-    .tips {
-      font-size: 0.85rem;
-      color: var(--subtext);
-      line-height: 1.6;
-    }
-    .change-inst-btn {
-      font-size: 0.85rem;
-      color: var(--primary);
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
       cursor: pointer;
-      text-decoration: underline;
-      background: none;
-      border: none;
-      padding: 0;
-      font-weight: 500;
+      font-size: 1rem;
+      margin-top: 16px;
     }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.7; }
-      100% { opacity: 1; }
-    }
+    .btn-back:active { background: #e2e8f0; }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -270,71 +323,107 @@
 <!-- 樂器選擇對話框 (Modal) -->
 <div id="instrumentModal" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-title">請選擇測試樂器</div>
-    <div class="modal-desc">系統將根據樂器自動載入空弦音高與共鳴分析指標。</div>
+    <div style="font-size:1.2rem; font-weight:700; margin-bottom:6px; color:#0f172a;">請選擇測試樂器</div>
+    <div style="font-size:0.88rem; color:var(--subtext); margin-bottom:14px;">系統將根據所選樂器配置空弦測試項目與頻率模型。</div>
     <div class="instrument-grid" id="modalInstrumentGrid"></div>
   </div>
 </div>
 
+<!-- 2秒 AI 計算動畫彈窗 (Modal) -->
+<div id="calcModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box calc-box">
+    <div class="spinner"></div>
+    <div style="font-size:1.15rem; font-weight:700; color:#0f172a;">AI 音色指紋深度對比中</div>
+    <div style="font-size:0.85rem; color:var(--subtext); margin-top:6px;">正提取頻譜重心、低頻諧波與動態共鳴衰減曲線...</div>
+    <div class="calc-progress-box">
+      <div id="calcProgressBar" class="calc-progress-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 分析報告結果彈窗 (Modal) -->
+<div id="reportModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box report-modal-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:1.2rem; color:#0f172a;">全音域音色分析報告</h3>
+      <span style="font-size:0.8rem; background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600;">AI 客觀評估</span>
+    </div>
+
+    <div class="score-banner">
+      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">整體音色綜合吻合度</div>
+      <div id="similarityScore" class="score-num">-- %</div>
+      <div id="verdictText" style="font-size:0.92rem; color:#334155; font-weight:500;">--</div>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="timbreRadarChart"></canvas>
+    </div>
+
+    <div style="font-size:0.82rem; color:var(--subtext); line-height:1.6; margin-top:8px;">
+      • <b>明亮度</b>：高頻泛音比例，數值高代表清亮通透、穿透力強。<br>
+      • <b>渾厚度</b>：低頻共鳴比例，數值高代表琴身共鳴飽滿、聲音扎實溫暖。<br>
+      • <b>延音共鳴</b>：振動能量穩定度，數值高代表餘音平穩綿長。<br>
+      • <b>音質純淨</b>：諧波純度比，數值高代表摩擦雜音與毛邊少。
+    </div>
+
+    <button id="closeReportBtn" class="btn-back">返回收音頁面 (保留當前指紋)</button>
+  </div>
+</div>
+
+<!-- 主介面容器 -->
 <div class="container">
   <header>
     <h1>弦樂器音色分析比對</h1>
-    <p class="subtitle">全弦聲學頻譜採樣與客觀近似度評估</p>
+    <p class="subtitle">聲學頻譜採樣與客觀近似度評估系統</p>
   </header>
 
   <!-- 第 1 格：錄製 Tip 與目前樂器 -->
   <div class="card">
     <div class="card-title">
       <span>目前樂器：<b id="currentInstrumentText" style="color:var(--primary);">二胡</b></span>
-      <button class="change-inst-btn" id="reselectBtn">更換樂器</button>
+      <button style="font-size:0.82rem; color:var(--primary); cursor:pointer; background:none; border:none; text-decoration:underline;" id="reselectBtn">更換樂器</button>
     </div>
     <div class="tip-banner">
-      <b>📌 錄製指引與注意事項：</b><br>
-      1. 手機平放於桌上，麥克風距離琴體約 <b>40～50 公分</b>。<br>
-      2. 點擊收音後有 <b>5 秒預備時間</b>，請就位並架好琴弓。<br>
-      3. 倒數結束轉為紅燈時，請以勻速、中等力度拉奏空弦長音 3 秒。<br>
-      4. <b>請拉純淨長音，勿加揉弦（震音）</b>，確保擷取最純粹的箱體自然共鳴。<br>
-      5. 兩把琴完成所有空弦收音後，系統將自動比對並產出綜合分析報告。
+      <b>📌 錄製指引與操作注意事項：</b><br>
+      1. 手機平放桌上，麥克風距離琴體約 <b>40～50 公分</b>。<br>
+      2. 點擊空弦收音後有 <b>3 秒預備時間</b>，請就位拉奏勻速長音 3 秒（勿加揉弦）。<br>
+      3. <b>自由旋律</b>：請以相同速度與弓法拉奏一段包含兩條弦的簡短旋律（最長 10 秒，拉完可按按鈕立即提早結束）。<br>
+      4. 收音完成後，點擊下方<b>「點此進行 AI 音色分析」</b>開啟報告。
     </div>
   </div>
 
   <!-- 第 2 格：目標琴音色指紋 -->
   <div class="card">
     <div class="card-title">
-      目標琴音色指紋 (Target)
-      <span id="targetProgressBadge" style="font-size:0.85rem; color:var(--subtext);">0/2 完成</span>
+      <span>目標琴音色指紋 (Target)</span>
+      <div class="header-actions">
+        <span id="targetProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0 完成</span>
+        <button id="clearTargetBtn" class="btn-clear">清除</button>
+      </div>
     </div>
     <div class="string-btn-grid" id="targetStringContainer"></div>
   </div>
 
-  <!-- 第 3 格：待測候選琴 -->
+  <!-- 第 3 格：待測候選琴音色指紋 -->
   <div class="card">
     <div class="card-title">
-      待測候選琴 (Candidate)
-      <span id="candidateProgressBadge" style="font-size:0.85rem; color:var(--subtext);">0/2 完成</span>
+      <span>待測候選琴音色指紋 (Candidate)</span>
+      <div class="header-actions">
+        <span id="candidateProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0 完成</span>
+        <button id="clearCandidateBtn" class="btn-clear">清除</button>
+      </div>
     </div>
     <div class="string-btn-grid" id="candidateStringContainer"></div>
   </div>
 
-  <!-- 第 4 格：分析報告區塊 -->
-  <div id="resultCard" class="card" style="display: none;">
-    <div class="card-title">全弦綜合音色比對報告</div>
-    <div class="score-banner">
-      <div style="font-size:0.9rem; color:#1e40af; font-weight:600;">綜合音色吻合度</div>
-      <div id="similarityScore" class="score-num">-- %</div>
-      <div id="verdictText" class="verdict-box">--</div>
-    </div>
-    <div class="chart-container"><canvas id="timbreRadarChart"></canvas></div>
-    <div class="tips">
-      • <b>明亮度</b>：高頻泛音比例，數值高代表清亮通透、穿透力強。<br>
-      • <b>渾厚度</b>：低頻共鳴比例，數值高代表箱體共鳴大、聲音扎實溫暖。<br>
-      • <b>延音共鳴</b>：能量衰減的平穩度，數值高代表共鳴悠長平穩。<br>
-      • <b>音質純淨</b>：諧波與摩擦雜訊之比，數值高代表擦弦雜音少。
-    </div>
-  </div>
+  <!-- 底部分析按鈕 -->
+  <button id="startAnalysisBtn" class="btn-analyze-main" disabled>
+    <span>點此進行 AI 音色分析</span>
+  </button>
 </div>
 
 <script>
+  // 樂器庫
   const INSTRUMENTS = {
     erhu: {
       name: '二胡',
@@ -386,6 +475,7 @@
   let candidateData = {};
   let chartInstance = null;
 
+  // DOM 參考
   const modal = document.getElementById('instrumentModal');
   const modalGrid = document.getElementById('modalInstrumentGrid');
   const currentInstText = document.getElementById('currentInstrumentText');
@@ -394,15 +484,22 @@
   const candidateContainer = document.getElementById('candidateStringContainer');
   const targetBadge = document.getElementById('targetProgressBadge');
   const candidateBadge = document.getElementById('candidateProgressBadge');
-  const resultCard = document.getElementById('resultCard');
+  const clearTargetBtn = document.getElementById('clearTargetBtn');
+  const clearCandidateBtn = document.getElementById('clearCandidateBtn');
+  const startAnalysisBtn = document.getElementById('startAnalysisBtn');
+  const calcModal = document.getElementById('calcModal');
+  const calcProgressBar = document.getElementById('calcProgressBar');
+  const reportModal = document.getElementById('reportModal');
+  const closeReportBtn = document.getElementById('closeReportBtn');
 
+  // 初始化選擇樂器
   function initModal() {
     modalGrid.innerHTML = '';
     Object.keys(INSTRUMENTS).forEach(key => {
       const inst = INSTRUMENTS[key];
       const btn = document.createElement('button');
       btn.className = `inst-btn ${key === currentKey ? 'active' : ''}`;
-      btn.innerHTML = `<span>${inst.name}</span><span class="inst-sub">${inst.strings.length} 條弦</span>`;
+      btn.innerHTML = `<span>${inst.name}</span><span style="font-size:0.75rem; color:#64748b;">${inst.strings.length} 條空弦</span>`;
       btn.onclick = () => selectInstrument(key);
       modalGrid.appendChild(btn);
     });
@@ -412,7 +509,7 @@
     currentKey = key;
     currentInstText.innerText = INSTRUMENTS[key].name;
     modal.style.display = 'none';
-    resetAndRenderUI();
+    clearAllData();
   }
 
   reselectBtn.onclick = () => {
@@ -420,99 +517,158 @@
     modal.style.display = 'flex';
   };
 
-  function resetAndRenderUI() {
+  // 清除資料處理
+  function clearAllData() {
     targetData = {};
     candidateData = {};
-    resultCard.style.display = 'none';
-    updateBadges();
+    renderUI();
+  }
 
+  clearTargetBtn.onclick = () => {
+    targetData = {};
+    renderUI();
+  };
+
+  clearCandidateBtn.onclick = () => {
+    candidateData = {};
+    renderUI();
+  };
+
+  // 渲染按鈕介面
+  function renderUI() {
     const inst = INSTRUMENTS[currentKey];
     targetContainer.innerHTML = '';
     candidateContainer.innerHTML = '';
 
+    // 1. 各空弦按鈕
     inst.strings.forEach(s => {
-      targetContainer.appendChild(createStringRow(s, 'target'));
-      candidateContainer.appendChild(createStringRow(s, 'candidate'));
+      targetContainer.appendChild(createButtonRow(s, 'target', false));
+      candidateContainer.appendChild(createButtonRow(s, 'candidate', false));
     });
+
+    // 2. 自由旋律按鈕
+    const melodyDef = { id: 'melody', name: '自由旋律 (跨弦演奏)', note: '自選兩弦旋律' };
+    targetContainer.appendChild(createButtonRow(melodyDef, 'target', true));
+    candidateContainer.appendChild(createButtonRow(melodyDef, 'candidate', true));
+
+    updateBadgesAndCheckReady();
   }
 
-  function createStringRow(s, type) {
+  function createButtonRow(item, type, isMelody) {
     const wrap = document.createElement('div');
     const isTarget = type === 'target';
+    const store = isTarget ? targetData : candidateData;
+    const isRecorded = !!store[item.id];
+
+    let btnClass = `btn-record ${isTarget ? 'target-btn' : 'candidate-btn'}`;
+    if (isMelody) btnClass += ' melody-btn';
+    if (isRecorded) btnClass += ' recorded';
+
     wrap.innerHTML = `
-      <div class="string-record-row">
-        <button id="${type}_btn_${s.id}" class="btn-record ${isTarget ? 'target-btn' : 'candidate-btn'}">
-          <span><b>${s.name}</b> (${s.note})</span>
-          <span id="${type}_status_${s.id}">點擊收音</span>
+      <div style="display:flex; align-items:center;">
+        <button id="${type}_btn_${item.id}" class="${btnClass}">
+          <span><b>${item.name}</b> <small style="opacity:0.8;">(${item.note})</small></span>
+          <span id="${type}_status_${item.id}">${isRecorded ? '✓ 已採樣' : (isMelody ? '點擊收音 (最長10s)' : '點擊收音 (3s)')}</span>
         </button>
       </div>
-      <div id="${type}_meter_${s.id}" class="meter-box">
-        <div id="${type}_bar_${s.id}" class="meter-bar" style="${!isTarget ? 'background:var(--secondary);' : ''}"></div>
+      <div id="${type}_meter_${item.id}" class="meter-box">
+        <div id="${type}_bar_${item.id}" class="meter-bar" style="${!isTarget ? 'background:var(--secondary);' : ''}"></div>
       </div>
     `;
 
-    const btn = wrap.querySelector(`#${type}_btn_${s.id}`);
-    const meter = wrap.querySelector(`#${type}_meter_${s.id}`);
-    const bar = wrap.querySelector(`#${type}_bar_${s.id}`);
-    const status = wrap.querySelector(`#${type}_status_${s.id}`);
+    const btn = wrap.querySelector(`#${type}_btn_${item.id}`);
+    const meter = wrap.querySelector(`#${type}_meter_${item.id}`);
+    const bar = wrap.querySelector(`#${type}_bar_${item.id}`);
+    const status = wrap.querySelector(`#${type}_status_${item.id}`);
 
     btn.onclick = async () => {
-      try {
-        const metrics = await runRecordingWithPreparation(meter, bar, btn, status);
-        if (isTarget) targetData[s.id] = metrics;
-        else candidateData[s.id] = metrics;
+      // 若正在錄音中點擊，則觸發提前停止（針對自由旋律）
+      if (btn.dataset.isRecording === 'true' && btn.dataset.stopHandler) {
+        window[btn.dataset.stopHandler]();
+        return;
+      }
 
-        btn.classList.remove('preparing', 'recording');
-        btn.classList.add('recorded');
-        status.innerText = '✓ 已完成';
-        updateBadges();
-        checkAndEvaluate();
+      try {
+        const metrics = await startSmartCapture(meter, bar, btn, status, isMelody);
+        if (metrics) {
+          store[item.id] = metrics;
+          btn.classList.remove('preparing', 'recording');
+          btn.classList.add('recorded');
+          status.innerText = '✓ 已完成';
+          updateBadgesAndCheckReady();
+        }
       } catch (e) {
         alert('無法啟用麥克風，請檢查瀏覽器設定！');
-        status.innerText = '點擊收音';
+        status.innerText = isMelody ? '點擊收音 (最長10s)' : '點擊收音 (3s)';
         btn.classList.remove('preparing', 'recording');
         btn.disabled = false;
+        btn.dataset.isRecording = 'false';
       }
     };
+
     return wrap;
   }
 
-  function updateBadges() {
-    const total = INSTRUMENTS[currentKey].strings.length;
-    const tCount = Object.keys(targetData).length;
-    const cCount = Object.keys(candidateData).length;
-    targetBadge.innerText = `${tCount}/${total} 完成`;
-    candidateBadge.innerText = `${cCount}/${total} 完成`;
+  function updateBadgesAndCheckReady() {
+    const instStringsCount = INSTRUMENTS[currentKey].strings.length;
+    const totalRequired = instStringsCount; // 至少需收完所有空弦
+
+    const tKeys = Object.keys(targetData);
+    const cKeys = Object.keys(candidateData);
+
+    targetBadge.innerText = `${tKeys.length} 項採樣`;
+    candidateBadge.innerText = `${cKeys.length} 項採樣`;
+
+    // 判定是否可開始分析：兩把琴均至少收完所有空弦
+    const tReady = INSTRUMENTS[currentKey].strings.every(s => targetData[s.id]);
+    const cReady = INSTRUMENTS[currentKey].strings.every(s => candidateData[s.id]);
+
+    if (tReady && cReady) {
+      startAnalysisBtn.disabled = false;
+      startAnalysisBtn.style.background = '#1e88e5';
+    } else {
+      startAnalysisBtn.disabled = true;
+      startAnalysisBtn.style.background = '';
+    }
   }
 
-  async function runRecordingWithPreparation(meterBox, meterBar, btnElement, statusText) {
-    btnElement.disabled = true;
+  // 智慧收音流程 (含3秒預備倒數、自由旋律手動提早結束)
+  async function startSmartCapture(meterBox, meterBar, btnElement, statusText, isMelody) {
+    btnElement.disabled = false;
+    btnElement.dataset.isRecording = 'false';
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
 
+    // 1. 預備倒數：改為 3 秒
     btnElement.classList.remove('recorded');
     btnElement.classList.add('preparing');
-    let prepSeconds = 5;
-    statusText.innerText = `準備中 ${prepSeconds}s...`;
+    let prepSec = 3;
+    statusText.innerText = `準備就緒 ${prepSec}s...`;
 
     await new Promise((resolve) => {
-      const prepInterval = setInterval(() => {
-        prepSeconds--;
-        if (prepSeconds > 0) {
-          statusText.innerText = `準備中 ${prepSeconds}s...`;
+      const pInt = setInterval(() => {
+        prepSec--;
+        if (prepSec > 0) {
+          statusText.innerText = `準備就緒 ${prepSec}s...`;
         } else {
-          clearInterval(prepInterval);
+          clearInterval(pInt);
           resolve();
         }
       }, 1000);
     });
 
+    // 2. 正式收音 (空弦 3 秒 / 自由旋律最長 10 秒)
     btnElement.classList.remove('preparing');
     btnElement.classList.add('recording');
+    btnElement.dataset.isRecording = 'true';
     meterBox.style.display = 'block';
     meterBar.style.width = '0%';
+
+    const maxDuration = isMelody ? 10000 : 3000;
+    const stopFnName = `stop_rec_${Date.now()}`;
+    btnElement.dataset.stopHandler = stopFnName;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioCtx.createMediaStreamSource(stream);
@@ -527,20 +683,60 @@
     const binWidth = sampleRate / analyser.fftSize;
 
     let totalCentroid = 0, totalWarmth = 0, totalPurity = 0, rmsList = [], frameCount = 0;
-    const recordDuration = 3000;
     const startTime = Date.now();
 
     return new Promise((resolve) => {
+      let isDone = false;
+
+      function finalize() {
+        if (isDone) return;
+        isDone = true;
+        clearInterval(recordInterval);
+        delete window[stopFnName];
+        btnElement.dataset.isRecording = 'false';
+        delete btnElement.dataset.stopHandler;
+
+        stream.getTracks().forEach(t => t.stop());
+        audioCtx.close();
+        meterBox.style.display = 'none';
+
+        const avgCentroid = totalCentroid / (frameCount || 1);
+        const avgWarmth = totalWarmth / (frameCount || 1);
+        const avgPurity = totalPurity / (frameCount || 1);
+        const avgRms = rmsList.reduce((a, b) => a + b, 0) / (rmsList.length || 1);
+        const stdRms = Math.sqrt(rmsList.reduce((acc, val) => acc + Math.pow(val - avgRms, 2), 0) / (rmsList.length || 1));
+        const resonance = Math.max(0, Math.min(1, 1 - (stdRms / (avgRms + 1e-6))));
+
+        resolve({
+          brightness: Math.round(Math.min(95, Math.max(10, avgCentroid / 30))),
+          warmth: Math.round(Math.min(95, Math.max(10, avgWarmth * 110))),
+          resonance: Math.round(Math.min(95, Math.max(10, resonance * 95))),
+          purity: Math.round(Math.min(95, Math.max(10, avgPurity * 95)))
+        });
+      }
+
+      // 提供外部主動停止 (提前點擊結束)
+      window[stopFnName] = () => {
+        finalize();
+      };
+
       const recordInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(100, (elapsed / recordDuration) * 100);
+        const progress = Math.min(100, (elapsed / maxDuration) * 100);
         meterBar.style.width = progress + '%';
-        statusText.innerText = `錄音中 ${( (recordDuration - elapsed) / 1000 ).toFixed(1)}s`;
+
+        const leftSec = ((maxDuration - elapsed) / 1000).toFixed(1);
+        if (isMelody) {
+          statusText.innerText = `⏹ 點此結束 (${leftSec}s)`;
+        } else {
+          statusText.innerText = `錄音中 ${leftSec}s`;
+        }
 
         analyser.getFloatFrequencyData(dataArray);
         analyser.getFloatTimeDomainData(timeDomainArray);
 
-        if (elapsed > 400 && elapsed < 2600) {
+        // 排除前 0.3 秒雜音，擷取有效震動
+        if (elapsed > 300) {
           let sumAmp = 0, weightedSum = 0, lowFreqEnergy = 0, totalEnergy = 0;
           for (let i = 0; i < bufferLength; i++) {
             let amp = Math.pow(10, dataArray[i] / 20);
@@ -568,59 +764,80 @@
           frameCount++;
         }
 
-        if (elapsed >= recordDuration) {
-          clearInterval(recordInterval);
-          stream.getTracks().forEach(t => t.stop());
-          audioCtx.close();
-          meterBox.style.display = 'none';
-          btnElement.classList.remove('recording');
-          btnElement.disabled = false;
-
-          const avgCentroid = totalCentroid / (frameCount || 1);
-          const avgWarmth = totalWarmth / (frameCount || 1);
-          const avgPurity = totalPurity / (frameCount || 1);
-          const avgRms = rmsList.reduce((a, b) => a + b, 0) / (rmsList.length || 1);
-          const stdRms = Math.sqrt(rmsList.reduce((acc, val) => acc + Math.pow(val - avgRms, 2), 0) / (rmsList.length || 1));
-          const resonance = Math.max(0, Math.min(1, 1 - (stdRms / (avgRms + 1e-6))));
-
-          resolve({
-            brightness: Math.round(Math.min(95, Math.max(10, avgCentroid / 30))),
-            warmth: Math.round(Math.min(95, Math.max(10, avgWarmth * 110))),
-            resonance: Math.round(Math.min(95, Math.max(10, resonance * 95))),
-            purity: Math.round(Math.min(95, Math.max(10, avgPurity * 95)))
-          });
+        if (elapsed >= maxDuration) {
+          finalize();
         }
       }, 50);
     });
   }
 
-  function checkAndEvaluate() {
-    const totalStrings = INSTRUMENTS[currentKey].strings.length;
-    if (Object.keys(targetData).length !== totalStrings || Object.keys(candidateData).length !== totalStrings) {
-      return;
-    }
+  // 點擊「點此進行 AI 音色分析」按鈕
+  startAnalysisBtn.onclick = () => {
+    // 1. 跳出 2 秒計算動畫彈窗
+    calcModal.style.display = 'flex';
+    calcProgressBar.style.width = '0%';
 
-    resultCard.style.display = 'block';
+    const startTime = Date.now();
+    const duration = 2000;
 
-    function getAverageProfile(dataObj) {
-      const keys = Object.keys(dataObj);
+    const calcTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / duration) * 100);
+      calcProgressBar.style.width = pct + '%';
+
+      if (elapsed >= duration) {
+        clearInterval(calcTimer);
+        calcModal.style.display = 'none';
+        showReportModal();
+      }
+    }, 40);
+  };
+
+  // 顯示報告彈窗與繪製雷達圖
+  function showReportModal() {
+    reportModal.style.display = 'flex';
+
+    // 彙整整把琴特徵 (空弦平均 75% + 自由旋律 25%)
+    function aggregateProfile(dataObj) {
+      const instStrings = INSTRUMENTS[currentKey].strings;
       let b = 0, w = 0, r = 0, p = 0;
-      keys.forEach(k => {
-        b += dataObj[k].brightness;
-        w += dataObj[k].warmth;
-        r += dataObj[k].resonance;
-        p += dataObj[k].purity;
+      let count = 0;
+
+      instStrings.forEach(s => {
+        if (dataObj[s.id]) {
+          b += dataObj[s.id].brightness;
+          w += dataObj[s.id].warmth;
+          r += dataObj[s.id].resonance;
+          p += dataObj[s.id].purity;
+          count++;
+        }
       });
+
+      let avg = {
+        brightness: b / (count || 1),
+        warmth: w / (count || 1),
+        resonance: r / (count || 1),
+        purity: p / (count || 1)
+      };
+
+      // 若有錄自由旋律，結合動態加權
+      if (dataObj.melody) {
+        avg.brightness = avg.brightness * 0.75 + dataObj.melody.brightness * 0.25;
+        avg.warmth = avg.warmth * 0.75 + dataObj.melody.warmth * 0.25;
+        avg.resonance = avg.resonance * 0.75 + dataObj.melody.resonance * 0.25;
+        avg.purity = avg.purity * 0.75 + dataObj.melody.purity * 0.25;
+      }
+
       return {
-        brightness: Math.round(b / keys.length),
-        warmth: Math.round(w / keys.length),
-        resonance: Math.round(r / keys.length),
-        purity: Math.round(p / keys.length)
+        brightness: Math.round(avg.brightness),
+        warmth: Math.round(avg.warmth),
+        resonance: Math.round(avg.resonance),
+        purity: Math.round(avg.purity)
       };
     }
 
-    const t = getAverageProfile(targetData);
-    const c = getAverageProfile(candidateData);
+    const t = aggregateProfile(targetData);
+    const c = aggregateProfile(candidateData);
 
     const diffB = Math.abs(t.brightness - c.brightness);
     const diffW = Math.abs(t.warmth - c.warmth);
@@ -631,14 +848,15 @@
 
     document.getElementById('similarityScore').innerText = `${similarity} %`;
 
-    let verdict = '各弦頻譜結構均勻，音色與目標琴高度吻合。';
+    let verdict = '各頻段能量分佈極為均勻，與目標琴音色結構高度吻合。';
     if (similarity < 82) {
-      if (c.brightness > t.brightness + 7) verdict = '候選琴高頻更為突出，整體聽感較目標琴清亮透徹。';
-      else if (c.warmth > t.warmth + 7) verdict = '候選琴低頻共鳴豐滿，整體聽感較目標琴更溫暖渾厚。';
-      else verdict = '兩把琴在共鳴頻譜結構上有明顯差異。';
+      if (c.brightness > t.brightness + 7) verdict = '待測琴高頻更為明亮，整體聽感較目標琴清亮、穿透力強。';
+      else if (c.warmth > t.warmth + 7) verdict = '待測琴低頻共鳴豐沛，整體聽感較目標琴更為厚實溫暖。';
+      else verdict = '兩把琴在箱體共鳴與高階泛音結構上有可辨識之風格差異。';
     }
     document.getElementById('verdictText').innerText = verdict;
 
+    // 繪製雷達圖
     const ctx = document.getElementById('timbreRadarChart').getContext('2d');
     const chartData = {
       labels: [
@@ -652,16 +870,16 @@
           label: '目標琴 (Target)',
           data: [t.brightness, t.warmth, t.resonance, t.purity],
           borderColor: '#1e88e5',
-          backgroundColor: 'rgba(30, 136, 229, 0.22)',
+          backgroundColor: 'rgba(30, 136, 229, 0.25)',
           borderWidth: 2.5,
           pointBackgroundColor: '#1e88e5',
           pointRadius: 4
         },
         {
-          label: '候選琴 (Candidate)',
+          label: '待測候選琴 (Candidate)',
           data: [c.brightness, c.warmth, c.resonance, c.purity],
           borderColor: '#e53935',
-          backgroundColor: 'rgba(229, 57, 53, 0.16)',
+          backgroundColor: 'rgba(229, 57, 53, 0.18)',
           borderDash: [6, 4],
           borderWidth: 2.5,
           pointBackgroundColor: '#e53935',
@@ -680,32 +898,16 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          layout: {
-            padding: 16
-          },
+          layout: { padding: 16 },
           scales: {
             r: {
               min: 0,
               max: 100,
-              ticks: {
-                stepSize: 25,
-                display: true,
-                font: { size: 11 },
-                color: '#94a3b8',
-                backdropColor: 'transparent'
-              },
-              grid: {
-                color: '#cbd5e1'
-              },
-              angleLines: {
-                color: '#cbd5e1'
-              },
+              ticks: { stepSize: 25, display: true, font: { size: 11 }, color: '#94a3b8', backdropColor: 'transparent' },
+              grid: { color: '#cbd5e1' },
+              angleLines: { color: '#cbd5e1' },
               pointLabels: {
-                font: {
-                  size: 15,
-                  weight: '600',
-                  family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft JhengHei', sans-serif"
-                },
+                font: { size: 15, weight: '600', family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft JhengHei', sans-serif" },
                 color: '#0f172a',
                 padding: 14
               }
@@ -714,21 +916,20 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: {
-                font: { size: 14, weight: '600' },
-                padding: 20,
-                boxWidth: 22,
-                boxHeight: 12
-              }
+              labels: { font: { size: 14, weight: '600' }, padding: 18, boxWidth: 22, boxHeight: 12 }
             }
           }
         }
       });
     }
-
-    resultCard.scrollIntoView({ behavior: 'smooth' });
   }
 
+  // 關閉報告返回主頁面（指紋皆保留）
+  closeReportBtn.onclick = () => {
+    reportModal.style.display = 'none';
+  };
+
+  // 啟動初始化
   initModal();
 </script>
 </body>
