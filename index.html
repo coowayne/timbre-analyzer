@@ -41,13 +41,13 @@
       margin-bottom: 16px;
     }
     h1 {
-      font-size: 1.35rem;
+      font-size: 1.45rem;
       margin: 0 0 4px 0;
       color: #0f172a;
     }
     p.subtitle {
       margin: 0;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--subtext);
     }
 
@@ -72,13 +72,13 @@
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
     .modal-title {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 700;
       margin-bottom: 8px;
       color: #0f172a;
     }
     .modal-desc {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: var(--subtext);
       margin-bottom: 20px;
       line-height: 1.4;
@@ -90,11 +90,11 @@
       margin-bottom: 16px;
     }
     .inst-btn {
-      padding: 14px 10px;
+      padding: 15px 10px;
       border-radius: 10px;
       border: 2px solid var(--border);
       background: #fff;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -109,7 +109,7 @@
       color: var(--primary);
     }
     .inst-sub {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       color: var(--subtext);
       font-weight: normal;
     }
@@ -118,13 +118,13 @@
     .card {
       background: var(--card-bg);
       border-radius: 14px;
-      padding: 18px;
+      padding: 20px;
       margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
     }
     .card-title {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       margin-bottom: 12px;
       display: flex;
@@ -134,9 +134,9 @@
     .tip-banner {
       background: #f0fdf4;
       border-left: 4px solid var(--success);
-      padding: 14px;
+      padding: 14px 16px;
       border-radius: 8px;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: #166534;
       line-height: 1.6;
     }
@@ -153,10 +153,10 @@
     }
     .btn-record {
       flex: 1;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-radius: 10px;
       border: none;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
@@ -200,10 +200,10 @@
     }
 
     .meter-box {
-      height: 6px;
+      height: 7px;
       width: 100%;
       background: #e2e8f0;
-      border-radius: 3px;
+      border-radius: 4px;
       overflow: hidden;
       margin-top: 6px;
       display: none;
@@ -215,40 +215,48 @@
       transition: width 0.05s linear;
     }
 
+    /* 雷達圖尺寸放大 */
     .chart-container {
       position: relative;
       width: 100%;
-      max-width: 440px;
-      margin: 10px auto 16px auto;
+      max-width: 580px;
+      min-height: 380px;
+      margin: 14px auto 20px auto;
     }
     .score-banner {
       text-align: center;
-      padding: 16px;
+      padding: 18px;
       border-radius: 12px;
       background: #eff6ff;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
       border: 1px solid #bfdbfe;
     }
     .score-num {
-      font-size: 2.4rem;
+      font-size: 2.8rem;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.1;
-      margin: 6px 0;
+      margin: 8px 0;
+    }
+    .verdict-box {
+      font-size: 0.95rem;
+      color: #334155;
+      font-weight: 500;
     }
     .tips {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--subtext);
-      line-height: 1.5;
+      line-height: 1.6;
     }
     .change-inst-btn {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--primary);
       cursor: pointer;
       text-decoration: underline;
       background: none;
       border: none;
       padding: 0;
+      font-weight: 500;
     }
     @keyframes pulse {
       0% { opacity: 1; }
@@ -294,7 +302,7 @@
   <div class="card">
     <div class="card-title">
       目標琴音色指紋 (Target)
-      <span id="targetProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0/2 完成</span>
+      <span id="targetProgressBadge" style="font-size:0.85rem; color:var(--subtext);">0/2 完成</span>
     </div>
     <div class="string-btn-grid" id="targetStringContainer"></div>
   </div>
@@ -303,7 +311,7 @@
   <div class="card">
     <div class="card-title">
       待測候選琴 (Candidate)
-      <span id="candidateProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0/2 完成</span>
+      <span id="candidateProgressBadge" style="font-size:0.85rem; color:var(--subtext);">0/2 完成</span>
     </div>
     <div class="string-btn-grid" id="candidateStringContainer"></div>
   </div>
@@ -312,9 +320,9 @@
   <div id="resultCard" class="card" style="display: none;">
     <div class="card-title">全弦綜合音色比對報告</div>
     <div class="score-banner">
-      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">綜合音色吻合度</div>
+      <div style="font-size:0.9rem; color:#1e40af; font-weight:600;">綜合音色吻合度</div>
       <div id="similarityScore" class="score-num">-- %</div>
-      <div id="verdictText" style="font-size:0.85rem; color:#475569;">--</div>
+      <div id="verdictText" class="verdict-box">--</div>
     </div>
     <div class="chart-container"><canvas id="timbreRadarChart"></canvas></div>
     <div class="tips">
@@ -477,16 +485,13 @@
     candidateBadge.innerText = `${cCount}/${total} 完成`;
   }
 
-  // 結合 5 秒預備倒數與 3 秒聲學採樣
   async function runRecordingWithPreparation(meterBox, meterBar, btnElement, statusText) {
     btnElement.disabled = true;
 
-    // 先取得麥克風授權（若使用者首次使用，可在此時允許，避免佔用倒數時間）
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
 
-    // 階段 1：5 秒預備倒數 (黃燈)
     btnElement.classList.remove('recorded');
     btnElement.classList.add('preparing');
     let prepSeconds = 5;
@@ -504,7 +509,6 @@
       }, 1000);
     });
 
-    // 階段 2：正式 3 秒收音 (紅燈)
     btnElement.classList.remove('preparing');
     btnElement.classList.add('recording');
     meterBox.style.display = 'block';
@@ -536,7 +540,6 @@
         analyser.getFloatFrequencyData(dataArray);
         analyser.getFloatTimeDomainData(timeDomainArray);
 
-        // 取中間 0.4s ~ 2.6s 最平穩振動段
         if (elapsed > 400 && elapsed < 2600) {
           let sumAmp = 0, weightedSum = 0, lowFreqEnergy = 0, totalEnergy = 0;
           for (let i = 0; i < bufferLength; i++) {
@@ -638,24 +641,31 @@
 
     const ctx = document.getElementById('timbreRadarChart').getContext('2d');
     const chartData = {
-      labels: ['明亮度 (高頻)', '渾厚度 (低頻共鳴)', '延音共鳴 (穩定度)', '音質純淨度'],
+      labels: [
+        ['明亮度', '(高頻穿透)'],
+        ['渾厚度', '(低頻共鳴)'],
+        ['延音共鳴', '(餘音平穩)'],
+        ['音質純淨', '(諧波純度)']
+      ],
       datasets: [
         {
           label: '目標琴 (Target)',
           data: [t.brightness, t.warmth, t.resonance, t.purity],
           borderColor: '#1e88e5',
-          backgroundColor: 'rgba(30, 136, 229, 0.2)',
-          borderWidth: 2,
-          pointBackgroundColor: '#1e88e5'
+          backgroundColor: 'rgba(30, 136, 229, 0.22)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#1e88e5',
+          pointRadius: 4
         },
         {
           label: '候選琴 (Candidate)',
           data: [c.brightness, c.warmth, c.resonance, c.purity],
           borderColor: '#e53935',
-          backgroundColor: 'rgba(229, 57, 53, 0.15)',
-          borderDash: [5, 5],
-          borderWidth: 2,
-          pointBackgroundColor: '#e53935'
+          backgroundColor: 'rgba(229, 57, 53, 0.16)',
+          borderDash: [6, 4],
+          borderWidth: 2.5,
+          pointBackgroundColor: '#e53935',
+          pointRadius: 4
         }
       ]
     };
@@ -669,15 +679,49 @@
         data: chartData,
         options: {
           responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: 16
+          },
           scales: {
             r: {
               min: 0,
               max: 100,
-              ticks: { stepSize: 25, display: false },
-              pointLabels: { font: { size: 12, weight: '600' } }
+              ticks: {
+                stepSize: 25,
+                display: true,
+                font: { size: 11 },
+                color: '#94a3b8',
+                backdropColor: 'transparent'
+              },
+              grid: {
+                color: '#cbd5e1'
+              },
+              angleLines: {
+                color: '#cbd5e1'
+              },
+              pointLabels: {
+                font: {
+                  size: 15,
+                  weight: '600',
+                  family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft JhengHei', sans-serif"
+                },
+                color: '#0f172a',
+                padding: 14
+              }
             }
           },
-          plugins: { legend: { position: 'bottom' } }
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { size: 14, weight: '600' },
+                padding: 20,
+                boxWidth: 22,
+                boxHeight: 12
+              }
+            }
+          }
         }
       });
     }
