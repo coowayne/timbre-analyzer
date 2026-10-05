@@ -2,700 +2,935 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI信件產生工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>弦樂器音色分析與比對系統</title>
+  <!-- Chart.js 繪製雷達圖 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary: #1a73e8;
-      --primary-hover: #1557b0;
-      --border: #dadce0;
-      --border-focus: #4285f4;
-      --bg: #f8f9fa;
-      --text: #202124;
-      --text-muted: #5f6368;
-      --shadow-sm: 0 1px 3px rgba(60,64,67, 0.12), 0 1px 2px rgba(60,64,67, 0.08);
-      --danger: #d93025;
+      --primary: #1e88e5;
+      --primary-dark: #1565c0;
+      --secondary: #e53935;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --subtext: #64748b;
+      --border: #e2e8f0;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --prep: #d97706;
+      --prep-bg: #fef3c7;
+      --melody: #059669;
+      --melody-bg: #ecfdf5;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f1f3f4;
+      background-color: var(--bg);
       color: var(--text);
-      line-height: 1.6;
-      padding: 40px 16px;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 32px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid rgba(0,0,0,0.06);
-    }
-
-    .header {
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
-    }
-
-    .header h2 {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .header p {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* 頂部分頁切換按鈕 */
-    .tab-navigation {
+      margin: 0;
+      padding: 16px;
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+      padding-bottom: 60px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+    }
+    p.subtitle {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--subtext);
     }
 
-    .tab-btn {
-      background: none;
-      border: none;
-      padding: 8px 18px;
-      font-size: 15px;
+    /* 通用彈窗遮罩 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #ffffff;
+      width: 100%;
+      max-width: 460px;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 樂器選擇對話框 */
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .inst-btn {
+      padding: 14px 10px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: #fff;
+      font-size: 0.95rem;
       font-weight: 600;
-      color: var(--text-muted);
       cursor: pointer;
-      border-radius: 6px;
-      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
     }
-
-    .tab-btn:hover {
-      background-color: #e8f0fe;
+    .inst-btn:active, .inst-btn.active {
+      border-color: var(--primary);
+      background: #eff6ff;
       color: var(--primary);
     }
 
-    .tab-btn.active {
-      background-color: var(--primary);
-      color: #ffffff;
-    }
-
-    /* 三欄排版配置 */
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 720px) {
-      .controls { grid-template-columns: 1fr; }
-      .container { padding: 20px; }
-    }
-
-    label {
-      font-weight: 600;
-      font-size: 14px;
-      display: block;
-      margin-bottom: 8px;
-      color: #374151;
-    }
-
-    select, textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      color: var(--text);
-      background-color: #ffffff;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
-    }
-
-    textarea {
-      height: 130px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-
-    /* 拖曳上傳區 */
-    .dropzone {
-      border: 2px dashed #b0bec5;
-      border-radius: 8px;
-      padding: 24px 16px;
-      text-align: center;
-      background: #fbfcfe;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 12px;
-    }
-
-    .dropzone.dragover {
-      border-color: var(--primary);
-      background: #e8f0fe;
-    }
-
-    .dropzone-icon {
-      font-size: 28px;
-      color: #78909c;
-      margin-bottom: 4px;
-    }
-
-    .dropzone p {
-      font-size: 14px;
-      color: #455a64;
-      font-weight: 500;
-    }
-
-    .dropzone span {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .file-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    /* 主卡片區塊 */
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 18px;
       margin-bottom: 16px;
-    }
-
-    .file-chip {
-      background: #edf2f7;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 4px 12px;
-      font-size: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: #2d3748;
     }
-
-    .file-chip .remove-btn {
-      cursor: pointer;
-      font-weight: bold;
-      color: #a0aec0;
-      border: none;
-      background: transparent;
-      font-size: 14px;
-      line-height: 1;
-    }
-
-    .file-chip .remove-btn:hover {
-      color: var(--danger);
-    }
-
-    .disclaimer {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    .disclaimer-icon {
-      font-size: 13px;
-      color: #f59e0b;
-      line-height: 1.3;
-    }
-
-    .action-row {
-      margin: 20px 0;
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
-
-    button.primary-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 11px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
+    .header-actions {
+      display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: var(--shadow-sm);
-      transition: background 0.2s, transform 0.1s;
     }
-
-    button.primary-btn:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
+    .btn-clear {
+      font-size: 0.8rem;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
     }
+    .btn-clear:active { background: #fecaca; }
 
-    button.primary-btn:disabled {
-      background: #bdc1c6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid #ffffff;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      display: inline-block;
-      animation: rotation 1s linear infinite;
-    }
-
-    @keyframes rotation {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .output-section {
-      margin-top: 10px;
-    }
-
-    .output-card {
-      border: 1px solid var(--border);
+    .tip-banner {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 14px;
       border-radius: 8px;
-      background: var(--bg);
-      padding: 20px;
-      min-height: 160px;
-      white-space: pre-wrap;
-      font-size: 14px;
-      position: relative;
-      color: var(--text);
+      font-size: 0.88rem;
+      color: #166534;
       line-height: 1.6;
     }
 
-    .output-card.active {
-      background: #ffffff;
-      border-color: #c2e7ff;
-      box-shadow: inset 0 0 0 1px #c2e7ff;
+    .string-btn-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
-    .copy-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: #ffffff;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      border-radius: 6px;
+    .btn-record {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    .copy-btn:hover {
-      background: #f1f3f4;
-      border-color: #bdc1c6;
-    }
-
-    .model-badge {
-      display: inline-flex;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 10px;
-      background: #f1f3f4;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      background: #e2e8f0;
+      color: #334155;
     }
+    .btn-record.target-btn {
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+    }
+    .btn-record.candidate-btn {
+      background: #fef2f2;
+      color: var(--secondary);
+      border: 1px solid #fecaca;
+    }
+    .btn-record.melody-btn {
+      background: var(--melody-bg);
+      color: var(--melody);
+      border: 1px dashed #6ee7b7;
+    }
+
+    /* 錄音三態 */
+    .btn-record.preparing {
+      background: var(--prep-bg) !important;
+      color: var(--prep) !important;
+      border: 1px solid #fde68a !important;
+      animation: pulse 1s infinite;
+    }
+    .btn-record.recording {
+      background: #ef4444 !important;
+      color: white !important;
+      animation: pulse 1s infinite;
+    }
+    .btn-record.recorded {
+      background: var(--success-bg) !important;
+      color: var(--success) !important;
+      border-color: #bbf7d0 !important;
+    }
+
+    .meter-box {
+      height: 6px;
+      width: 100%;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+      display: none;
+    }
+    .meter-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.05s linear;
+    }
+
+    /* 底部主分析按鈕 */
+    .btn-analyze-main {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(30, 136, 229, 0.35);
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-analyze-main:disabled {
+      background: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #94a3b8;
+    }
+
+    /* 2秒 AI 計算彈窗 */
+    .calc-box {
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #e2e8f0;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      margin: 0 auto 20px auto;
+      animation: spin 0.8s linear infinite;
+    }
+    .calc-progress-box {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .calc-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.05s linear;
+    }
+
+    /* 分析報告彈窗 */
+    .report-modal-box {
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+    }
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 540px;
+      min-height: 380px;
+      margin: 10px auto;
+    }
+    .score-banner {
+      text-align: center;
+      padding: 14px;
+      border-radius: 12px;
+      background: #eff6ff;
+      margin-bottom: 12px;
+      border: 1px solid #bfdbfe;
+    }
+    .score-num {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+      margin: 6px 0;
+    }
+    .btn-back {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 16px;
+    }
+    .btn-back:active { background: #e2e8f0; }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
-      <h2>AI信件產生工具</h2>
-      <p id="headerSubtitle">專為工程現場所需的信件中翻英、專門名詞對照與商務文件分析設計</p>
+<!-- 樂器選擇對話框 (Modal) -->
+<div id="instrumentModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="font-size:1.2rem; font-weight:700; margin-bottom:6px; color:#0f172a;">請選擇測試樂器</div>
+    <div style="font-size:0.88rem; color:var(--subtext); margin-bottom:14px;">系統將根據所選樂器配置空弦測試項目與頻率模型。</div>
+    <div class="instrument-grid" id="modalInstrumentGrid"></div>
+  </div>
+</div>
+
+<!-- 2秒 AI 計算動畫彈窗 (Modal) -->
+<div id="calcModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box calc-box">
+    <div class="spinner"></div>
+    <div style="font-size:1.15rem; font-weight:700; color:#0f172a;">AI 音色指紋深度對比中</div>
+    <div style="font-size:0.85rem; color:var(--subtext); margin-top:6px;">正提取頻譜重心、低頻諧波與動態共鳴衰減曲線...</div>
+    <div class="calc-progress-box">
+      <div id="calcProgressBar" class="calc-progress-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 分析報告結果彈窗 (Modal) -->
+<div id="reportModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box report-modal-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:1.2rem; color:#0f172a;">全音域音色分析報告</h3>
+      <span style="font-size:0.8rem; background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600;">AI 客觀評估</span>
     </div>
 
-    <!-- 模式切換按鈕 -->
-    <div class="tab-navigation">
-      <button class="tab-btn active" id="tabTranslate" onclick="switchMode('translate')">信件中翻英</button>
-      <button class="tab-btn" id="tabDocAnalysis" onclick="switchMode('analysis')">文件分析</button>
+    <div class="score-banner">
+      <div style="font-size:0.85rem; color:#1e40af; font-weight:600;">整體音色綜合吻合度</div>
+      <div id="similarityScore" class="score-num">-- %</div>
+      <div id="verdictText" style="font-size:0.92rem; color:#334155; font-weight:500;">--</div>
     </div>
 
-    <!-- 全域控制設定（專業領域、語氣設定、發信心情） -->
-    <div class="controls">
-      <div>
-        <label for="categorySelect">專業領域類別：</label>
-        <select id="categorySelect">
-          <option value="General">日常/採購商務 (General)</option>
-          <option value="Electrical">電機工程 (Electrical)</option>
-          <option value="Instrumentation">儀表控制 (Instrument)</option>
-          <option value="Accounting">會計財務 (Accounting)</option>
-        </select>
-      </div>
-      <div>
-        <label for="toneSelect">語氣設定：</label>
-        <select id="toneSelect">
-          <option value="Formal">正式禮貌</option>
-          <option value="Direct">簡潔直效</option>
-          <option value="Casual">美式口語</option>
-          <option value="Literal">中文直譯 / 純分析</option>
-        </select>
-      </div>
-      <div>
-        <label for="moodSelect">發信心情：</label>
-        <select id="moodSelect">
-          <option value="Normal">正常 (客觀中立)</option>
-          <option value="Happy">愉快 (熱情正面)</option>
-          <option value="Angry">嚴正/質詢 (緊迫關注)</option>
-        </select>
-      </div>
+    <div class="chart-container">
+      <canvas id="timbreRadarChart"></canvas>
     </div>
 
-    <!-- 模式 1：信件中翻英 介面 -->
-    <div id="translateModeSection">
-      <label for="sourceText">中文信件草稿：</label>
-      <textarea id="sourceText" placeholder="請輸入中文內容，例如：原先這幾項的單位都是攝氏，後來為了符合美國習慣改成華氏，不過經現場實際使用，由於絕大多數表頭單位都為攝氏，因此決定還是改回攝氏，請協助將單位以及敘述改回原本的內容..."></textarea>
+    <div style="font-size:0.82rem; color:var(--subtext); line-height:1.6; margin-top:8px;">
+      • <b>明亮度</b>：高頻泛音比例，數值高代表清亮通透、穿透力強。<br>
+      • <b>渾厚度</b>：低頻共鳴比例，數值高代表琴身共鳴飽滿、聲音扎實溫暖。<br>
+      • <b>延音共鳴</b>：振動能量穩定度，數值高代表餘音平穩綿長。<br>
+      • <b>音質純淨</b>：諧波純度比，數值高代表摩擦雜音與毛邊少。
     </div>
 
-    <!-- 模式 2：文件分析 介面 -->
-    <div id="analysisModeSection" style="display: none;">
-      <label>上傳廠商文件或報價單：</label>
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
-        <div class="dropzone-icon">📁</div>
-        <p>點擊選取或將檔案直接拖曳至此處</p>
-        <span>支援 PDF、PNG、JPG、CSV、TXT 等文件（可同時上傳多份文件進行對比）</span>
-        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
-      </div>
+    <button id="closeReportBtn" class="btn-back">返回收音頁面 (保留當前指紋)</button>
+  </div>
+</div>
 
-      <div class="file-list" id="fileList"></div>
+<!-- 主介面容器 -->
+<div class="container">
+  <header>
+    <h1>弦樂器音色分析比對</h1>
+    <p class="subtitle">聲學頻譜採樣與客觀近似度評估系統</p>
+  </header>
 
-      <label for="analysisPromptInput">您的中文指令與訴求：</label>
-      <textarea id="analysisPromptInput" placeholder="例如：請分析這兩份報價單，指出新版價格上漲的品項，並用正式語氣要求廠商說明漲價原因，同時確認交期是否依然維持 6 週..."></textarea>
+  <!-- 第 1 格：錄製 Tip 與目前樂器 -->
+  <div class="card">
+    <div class="card-title">
+      <span>目前樂器：<b id="currentInstrumentText" style="color:var(--primary);">二胡</b></span>
+      <button style="font-size:0.82rem; color:var(--primary); cursor:pointer; background:none; border:none; text-decoration:underline;" id="reselectBtn">更換樂器</button>
     </div>
-    
-    <!-- 聲明與免責小字 -->
-    <div class="disclaimer">
-      <span class="disclaimer-icon">ⓘ</span>
-      <span>本系統採用 Google Gemini AI 技術自動生成中翻英與文件比對建議。模型輸出可能偶有偏差，信件發送前請務必核對關鍵設備編號、參數數值、合約條款與收件人權限。</span>
-    </div>
-
-    <!-- 操作按鈕 -->
-    <div class="action-row">
-      <button id="submitBtn" class="primary-btn" onclick="executeCurrentMode()">
-        <span id="btnSpinner" class="spinner" style="display: none;"></span>
-        <span id="btnText">生成英文信件</span>
-      </button>
-    </div>
-
-    <!-- 英文結果展示區 -->
-    <div class="output-section">
-      <label id="outputLabel">英文郵件建議：</label>
-      <div class="output-card" id="outputCard">
-        <button class="copy-btn" id="copyBtn" onclick="copyOutput()" style="display: none;">複製內文</button>
-        <div id="outputContent" style="color: var(--text-muted);">處理結果將呈現於此...</div>
-      </div>
-      <div id="modelBadge" class="model-badge" style="display: none;"></div>
+    <div class="tip-banner">
+      <b>📌 錄製指引與操作注意事項：</b><br>
+      1. 手機平放桌上，麥克風距離琴體約 <b>40～50 公分</b>。<br>
+      2. 點擊空弦收音後有 <b>3 秒預備時間</b>，請就位拉奏勻速長音 3 秒（勿加揉弦）。<br>
+      3. <b>自由旋律</b>：請以相同速度與弓法拉奏一段包含兩條弦的簡短旋律（最長 10 秒，拉完可按按鈕立即提早結束）。<br>
+      4. 收音完成後，點擊下方<b>「點此進行 AI 音色分析」</b>開啟報告。
     </div>
   </div>
 
-  <script>
-    const WORKER_URL = "https://gemini-translator-proxy.wandering-poetry-ecb7.workers.dev";
+  <!-- 第 2 格：目標琴音色指紋 -->
+  <div class="card">
+    <div class="card-title">
+      <span>目標琴音色指紋 (Target)</span>
+      <div class="header-actions">
+        <span id="targetProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0 完成</span>
+        <button id="clearTargetBtn" class="btn-clear">清除</button>
+      </div>
+    </div>
+    <div class="string-btn-grid" id="targetStringContainer"></div>
+  </div>
 
-    let currentMode = 'translate'; // 預設模式：'translate' 或 'analysis'
-    let uploadedFiles = [];
+  <!-- 第 3 格：待測候選琴音色指紋 -->
+  <div class="card">
+    <div class="card-title">
+      <span>待測候選琴音色指紋 (Candidate)</span>
+      <div class="header-actions">
+        <span id="candidateProgressBadge" style="font-size:0.8rem; color:var(--subtext);">0 完成</span>
+        <button id="clearCandidateBtn" class="btn-clear">清除</button>
+      </div>
+    </div>
+    <div class="string-btn-grid" id="candidateStringContainer"></div>
+  </div>
 
-    const DOMAIN_GLOSSARY = {
-      General: `採購與商務術語：Quote / Quotation (報價單), Lead time (交期), Unit price (單價), Payment terms (付款條件), IncoTerms (如 FOB/DDP), PO (採購訂單)。`,
-      Electrical: `
-- 電機術語對照字典（僅供置換，草稿未提及則忽略）：
-  * 跳脫/復歸: trip / reset
-  * 電驛/比壓/比流/開關: protection relay / PT / CT / circuit breaker
-  * 送電/停電: energize / de-energize
-  * 故障跳脫: trip on fault / overload
-      `,
-      Instrumentation: `
-- 儀表術語對照字典（僅供置換，草稿未提及則忽略）：
-  * 變送器: transmitter (DP transmitter, PT)
-  * 漂移/校正: drift / calibrate / recalibrate
-  * 控制閥動作: valve hunting, stroke test, fail-safe position
-  * 回路測試: loop check
-      `,
-      Accounting: `
-- 會計財務術語（僅供置換，草稿未提及則忽略）：
-  * 發票/沖銷/對帳: invoice / billing / write-off / reconcile / account reconciliation
-  * 逾期/付款條件: overdue / past due / payment terms (Net 30)
-  * 傳票/報銷: voucher / journal entry / reimbursement
-      `
-    };
+  <!-- 底部分析按鈕 -->
+  <button id="startAnalysisBtn" class="btn-analyze-main" disabled>
+    <span>點此進行 AI 音色分析</span>
+  </button>
+</div>
 
-    const TONE_GUIDES = {
-      Formal: '專業正式風格。文法完整嚴謹，語氣客氣尊重。',
-      Direct: '簡潔直效風格。直奔主題，語句乾脆精準，無冗詞。',
-      Casual: '美式職場口語風格。自然親切，多用常見商務片語。',
-      Literal: '純文字直譯/純分析模式。嚴禁生成 Subject、稱謂與結尾簽名，直接輸出核心內容。'
-    };
-
-    const MOOD_GUIDES = {
-      Normal: '情緒客觀平實，中立理性。',
-      Happy: '情緒愉快友善，語氣熱情配合。',
-      Angry: '情緒嚴正堅定（Firm & Stern）。在符合職場禮貌前提下，展現問題嚴重性、緊迫感與責任要求。'
-    };
-
-    // 模式切換邏輯
-    function switchMode(mode) {
-      currentMode = mode;
-      const tabTranslate = document.getElementById('tabTranslate');
-      const tabDocAnalysis = document.getElementById('tabDocAnalysis');
-      const translateSection = document.getElementById('translateModeSection');
-      const analysisSection = document.getElementById('analysisModeSection');
-      const btnText = document.getElementById('btnText');
-      const outputLabel = document.getElementById('outputLabel');
-      const headerSubtitle = document.getElementById('headerSubtitle');
-
-      if (mode === 'translate') {
-        tabTranslate.classList.add('active');
-        tabDocAnalysis.classList.remove('active');
-        translateSection.style.display = 'block';
-        analysisSection.style.display = 'none';
-        btnText.innerText = '生成英文信件';
-        outputLabel.innerText = '英文郵件建議：';
-        headerSubtitle.innerText = '專為工程現場與商務溝通設計的精準術語中翻英工具';
-      } else {
-        tabTranslate.classList.remove('active');
-        tabDocAnalysis.classList.add('active');
-        translateSection.style.display = 'none';
-        analysisSection.style.display = 'block';
-        btnText.innerText = '分析文件並撰寫信件';
-        outputLabel.innerText = '文件分析與英文郵件建議：';
-        headerSubtitle.innerText = '上傳廠商報價單、規格書或型錄，自動比對細節並草擬專業回信';
-      }
+<script>
+  // 樂器庫
+  const INSTRUMENTS = {
+    erhu: {
+      name: '二胡',
+      strings: [
+        { id: 'd4', name: '內弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: '外弦', note: 'A4 / 440Hz' }
+      ]
+    },
+    violin: {
+      name: '小提琴',
+      strings: [
+        { id: 'g3', name: 'G 弦', note: 'G3 / 196Hz' },
+        { id: 'd4', name: 'D 弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: 'A 弦', note: 'A4 / 440Hz' },
+        { id: 'e5', name: 'E 弦', note: 'E5 / 659Hz' }
+      ]
+    },
+    viola: {
+      name: '中提琴',
+      strings: [
+        { id: 'c3', name: 'C 弦', note: 'C3 / 130Hz' },
+        { id: 'g3', name: 'G 弦', note: 'G3 / 196Hz' },
+        { id: 'd4', name: 'D 弦', note: 'D4 / 293Hz' },
+        { id: 'a4', name: 'A 弦', note: 'A4 / 440Hz' }
+      ]
+    },
+    cello: {
+      name: '大提琴',
+      strings: [
+        { id: 'c2', name: 'C 弦', note: 'C2 / 65Hz' },
+        { id: 'g2', name: 'G 弦', note: 'G2 / 98Hz' },
+        { id: 'd3', name: 'D 弦', note: 'D3 / 146Hz' },
+        { id: 'a3', name: 'A 弦', note: 'A3 / 220Hz' }
+      ]
+    },
+    guitar: {
+      name: '木吉他',
+      strings: [
+        { id: 'e2', name: '6 弦', note: 'E2 / 82Hz' },
+        { id: 'a2', name: '5 弦', note: 'A2 / 110Hz' },
+        { id: 'd3', name: '4 弦', note: 'D3 / 146Hz' },
+        { id: 'g3', name: '3 弦', note: 'G3 / 196Hz' }
+      ]
     }
+  };
 
-    // 檔案拖曳與選取處理
-    const dropzone = document.getElementById('dropzone');
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropzone.classList.add('dragover');
-      });
+  let currentKey = 'erhu';
+  let targetData = {};
+  let candidateData = {};
+  let chartInstance = null;
+
+  // DOM 參考
+  const modal = document.getElementById('instrumentModal');
+  const modalGrid = document.getElementById('modalInstrumentGrid');
+  const currentInstText = document.getElementById('currentInstrumentText');
+  const reselectBtn = document.getElementById('reselectBtn');
+  const targetContainer = document.getElementById('targetStringContainer');
+  const candidateContainer = document.getElementById('candidateStringContainer');
+  const targetBadge = document.getElementById('targetProgressBadge');
+  const candidateBadge = document.getElementById('candidateProgressBadge');
+  const clearTargetBtn = document.getElementById('clearTargetBtn');
+  const clearCandidateBtn = document.getElementById('clearCandidateBtn');
+  const startAnalysisBtn = document.getElementById('startAnalysisBtn');
+  const calcModal = document.getElementById('calcModal');
+  const calcProgressBar = document.getElementById('calcProgressBar');
+  const reportModal = document.getElementById('reportModal');
+  const closeReportBtn = document.getElementById('closeReportBtn');
+
+  // 初始化選擇樂器
+  function initModal() {
+    modalGrid.innerHTML = '';
+    Object.keys(INSTRUMENTS).forEach(key => {
+      const inst = INSTRUMENTS[key];
+      const btn = document.createElement('button');
+      btn.className = `inst-btn ${key === currentKey ? 'active' : ''}`;
+      btn.innerHTML = `<span>${inst.name}</span><span style="font-size:0.75rem; color:#64748b;">${inst.strings.length} 條空弦</span>`;
+      btn.onclick = () => selectInstrument(key);
+      modalGrid.appendChild(btn);
+    });
+  }
+
+  function selectInstrument(key) {
+    currentKey = key;
+    currentInstText.innerText = INSTRUMENTS[key].name;
+    modal.style.display = 'none';
+    clearAllData();
+  }
+
+  reselectBtn.onclick = () => {
+    initModal();
+    modal.style.display = 'flex';
+  };
+
+  // 清除資料處理
+  function clearAllData() {
+    targetData = {};
+    candidateData = {};
+    renderUI();
+  }
+
+  clearTargetBtn.onclick = () => {
+    targetData = {};
+    renderUI();
+  };
+
+  clearCandidateBtn.onclick = () => {
+    candidateData = {};
+    renderUI();
+  };
+
+  // 渲染按鈕介面
+  function renderUI() {
+    const inst = INSTRUMENTS[currentKey];
+    targetContainer.innerHTML = '';
+    candidateContainer.innerHTML = '';
+
+    // 1. 各空弦按鈕
+    inst.strings.forEach(s => {
+      targetContainer.appendChild(createButtonRow(s, 'target', false));
+      candidateContainer.appendChild(createButtonRow(s, 'candidate', false));
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropzone.classList.remove('dragover');
-      });
-    });
+    // 2. 自由旋律按鈕
+    const melodyDef = { id: 'melody', name: '自由旋律 (跨弦演奏)', note: '自選兩弦旋律' };
+    targetContainer.appendChild(createButtonRow(melodyDef, 'target', true));
+    candidateContainer.appendChild(createButtonRow(melodyDef, 'candidate', true));
 
-    dropzone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      handleFiles(dt.files);
-    });
+    updateBadgesAndCheckReady();
+  }
 
-    function handleFileSelect(e) {
-      handleFiles(e.target.files);
-    }
+  function createButtonRow(item, type, isMelody) {
+    const wrap = document.createElement('div');
+    const isTarget = type === 'target';
+    const store = isTarget ? targetData : candidateData;
+    const isRecorded = !!store[item.id];
 
-    async function handleFiles(files) {
-      for (const file of files) {
-        const base64Data = await fileToBase64(file);
-        uploadedFiles.push({
-          name: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          data: base64Data
-        });
+    let btnClass = `btn-record ${isTarget ? 'target-btn' : 'candidate-btn'}`;
+    if (isMelody) btnClass += ' melody-btn';
+    if (isRecorded) btnClass += ' recorded';
+
+    wrap.innerHTML = `
+      <div style="display:flex; align-items:center;">
+        <button id="${type}_btn_${item.id}" class="${btnClass}">
+          <span><b>${item.name}</b> <small style="opacity:0.8;">(${item.note})</small></span>
+          <span id="${type}_status_${item.id}">${isRecorded ? '✓ 已採樣' : (isMelody ? '點擊收音 (最長10s)' : '點擊收音 (3s)')}</span>
+        </button>
+      </div>
+      <div id="${type}_meter_${item.id}" class="meter-box">
+        <div id="${type}_bar_${item.id}" class="meter-bar" style="${!isTarget ? 'background:var(--secondary);' : ''}"></div>
+      </div>
+    `;
+
+    const btn = wrap.querySelector(`#${type}_btn_${item.id}`);
+    const meter = wrap.querySelector(`#${type}_meter_${item.id}`);
+    const bar = wrap.querySelector(`#${type}_bar_${item.id}`);
+    const status = wrap.querySelector(`#${type}_status_${item.id}`);
+
+    btn.onclick = async () => {
+      // 若正在錄音中點擊，則觸發提前停止（針對自由旋律）
+      if (btn.dataset.isRecording === 'true' && btn.dataset.stopHandler) {
+        window[btn.dataset.stopHandler]();
+        return;
       }
-      renderFileList();
-    }
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function renderFileList() {
-      const listEl = document.getElementById('fileList');
-      listEl.innerHTML = '';
-      uploadedFiles.forEach((file, index) => {
-        const chip = document.createElement('div');
-        chip.className = 'file-chip';
-        chip.innerHTML = `
-          <span>📄 ${file.name}</span>
-          <button class="remove-btn" onclick="removeFile(${index})">&times;</button>
-        `;
-        listEl.appendChild(chip);
-      });
-    }
-
-    function removeFile(index) {
-      uploadedFiles.splice(index, 1);
-      renderFileList();
-    }
-
-    // 執行請求主流程
-    async function executeCurrentMode() {
-      const category = document.getElementById('categorySelect').value;
-      const tone = document.getElementById('toneSelect').value;
-      const mood = document.getElementById('moodSelect').value;
-      
-      const submitBtn = document.getElementById('submitBtn');
-      const btnText = document.getElementById('btnText');
-      const btnSpinner = document.getElementById('btnSpinner');
-      const outputCard = document.getElementById('outputCard');
-      const outputContent = document.getElementById('outputContent');
-      const copyBtn = document.getElementById('copyBtn');
-      const modelBadge = document.getElementById('modelBadge');
-
-      const glossary = DOMAIN_GLOSSARY[category] || '';
-      const toneInstruction = TONE_GUIDES[tone] || TONE_GUIDES.Direct;
-      const isLiteral = (tone === 'Literal');
-      const moodInstruction = isLiteral ? '直譯模式：忽略情緒修飾，聚焦於客觀數據與直譯。' : (MOOD_GUIDES[mood] || MOOD_GUIDES.Normal);
-
-      let promptPayload = '';
-      let filesPayload = [];
-
-      if (currentMode === 'translate') {
-        const text = document.getElementById('sourceText').value.trim();
-        if (!text) {
-          alert('請輸入中文信件內容');
-          return;
-        }
-
-        const formatInstruction = isLiteral
-          ? `1. 絕對禁止生成 "Subject:"、稱謂或簽名結尾。
-2. 絕對禁止任何客套問候或感謝句。
-3. 嚴格逐句翻譯草稿，直接輸出純文字英文。`
-          : `1. 格式：
-   Subject: [簡短精確切合草稿主題]
-   
-   Dear [Name],
-   [正文]
-   
-   Best regards,
-   [Your Name]
-2. 【核心嚴禁事項】：
-   - 資訊量必須與中文草稿嚴格等比！草稿只寫一句話，正文就只能寫 1-2 句話。
-   - 絕對禁止虛構草稿未提及的情節（如設備測試、會議日程、技術評估、待辦事項清單）。
-   - 【術語對照字典】僅作為字典使用。若草稿未涉及字典中的設備或名詞，嚴禁自行塞入這些詞彙！
-3. 請依照指定的語氣與心情進行文字潤飾，但不可無中生有。
-4. 直接輸出信件內容，無須任何前言或結語解釋。`;
-
-        promptPayload = `
-你是一位專業中翻英翻譯助手。你的唯一任務是將【中文草稿】翻譯並潤飾成英文信件。
-
-【術語對照字典（僅供名詞置換，草稿未提及則徹底忽略）】
-${glossary}
-
-【語氣設定】: ${toneInstruction}
-【發信心情】: ${moodInstruction}
-
-【輸出格式與邊界規則】
-${formatInstruction}
-
-【中文草稿（這是唯一的事實來源，嚴禁自行延伸或腦補情節）】
-${text}
-        `.trim();
-
-      } else {
-        // 文件分析模式
-        const userPrompt = document.getElementById('analysisPromptInput').value.trim();
-        if (!userPrompt && uploadedFiles.length === 0) {
-          alert('請至少上傳一份文件或輸入您的分析/信件撰寫指令');
-          return;
-        }
-
-        filesPayload = uploadedFiles;
-        promptPayload = `
-你是一位精通跨國工程採購、現場維運與商務議價的專業工程顧問。
-使用者已附加了工程/報價文件，並給予了具體的工作指令。
-
-【領域術語規範】
-${glossary}
-
-【溝通風格設定】: ${toneInstruction}
-【發信情緒傾向】: ${moodInstruction}
-
-【使用者的核心指令與訴求】
-${userPrompt || '請分析所附文件的關鍵數據與項目，並向廠商草擬一封專業的確認與回覆郵件。'}
-
-【任務與輸出要求】
-1. 請仔細檢視所有附加的文件（包含報價單單價變更、型號變更、交期條款、規格參數等）。
-2. 若使用者要求比對報價單或文件，請嚴格根據文件真實內容指出差異（如：哪項料號漲價、漲幅多少、交期差異等），嚴禁憑空捏造文件中不存在的數據。
-3. 根據比對結果與使用者的中文訴求，撰寫出符合指定領域、語氣與心情的標準英文商務/技術郵件（包含 Subject、稱謂、條理清楚的正文、具體提問或訴求、簽名結尾）。
-4. 直接輸出信件內容，無須額外的系統說明或閒聊。
-        `.trim();
-      }
-
-      submitBtn.disabled = true;
-      btnSpinner.style.display = 'inline-block';
-      btnText.innerText = currentMode === 'translate' ? 'AI 轉譯中...' : 'AI 正在解析文件與生成中...';
-      
-      outputCard.classList.remove('active');
-      outputContent.style.color = 'var(--text-muted)';
-      outputContent.innerText = '正在處理並優化內容...';
-      copyBtn.style.display = 'none';
-      modelBadge.style.display = 'none';
 
       try {
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: promptPayload,
-            files: filesPayload
-          })
-        });
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message || data.error);
-
-        const generatedText = data.candidates[0].content.parts[0].text;
-        outputContent.style.color = 'var(--text)';
-        outputContent.innerText = generatedText;
-        outputCard.classList.add('active');
-        copyBtn.style.display = 'block';
-
-        if (data.usedModel) {
-          modelBadge.innerText = `⚡ 本次生成模型：${data.usedModel}`;
-          modelBadge.style.display = 'inline-flex';
+        const metrics = await startSmartCapture(meter, bar, btn, status, isMelody);
+        if (metrics) {
+          store[item.id] = metrics;
+          btn.classList.remove('preparing', 'recording');
+          btn.classList.add('recorded');
+          status.innerText = '✓ 已完成';
+          updateBadgesAndCheckReady();
         }
-      } catch (err) {
-        outputContent.style.color = 'var(--danger)';
-        outputContent.innerText = `發生錯誤: ${err.message}`;
-      } finally {
-        submitBtn.disabled = false;
-        btnSpinner.style.display = 'none';
-        btnText.innerText = currentMode === 'translate' ? '生成英文信件' : '分析文件並撰寫信件';
+      } catch (e) {
+        alert('無法啟用麥克風，請檢查瀏覽器設定！');
+        status.innerText = isMelody ? '點擊收音 (最長10s)' : '點擊收音 (3s)';
+        btn.classList.remove('preparing', 'recording');
+        btn.disabled = false;
+        btn.dataset.isRecording = 'false';
       }
+    };
+
+    return wrap;
+  }
+
+  function updateBadgesAndCheckReady() {
+    const instStringsCount = INSTRUMENTS[currentKey].strings.length;
+    const totalRequired = instStringsCount; // 至少需收完所有空弦
+
+    const tKeys = Object.keys(targetData);
+    const cKeys = Object.keys(candidateData);
+
+    targetBadge.innerText = `${tKeys.length} 項採樣`;
+    candidateBadge.innerText = `${cKeys.length} 項採樣`;
+
+    // 判定是否可開始分析：兩把琴均至少收完所有空弦
+    const tReady = INSTRUMENTS[currentKey].strings.every(s => targetData[s.id]);
+    const cReady = INSTRUMENTS[currentKey].strings.every(s => candidateData[s.id]);
+
+    if (tReady && cReady) {
+      startAnalysisBtn.disabled = false;
+      startAnalysisBtn.style.background = '#1e88e5';
+    } else {
+      startAnalysisBtn.disabled = true;
+      startAnalysisBtn.style.background = '';
+    }
+  }
+
+  // 智慧收音流程 (含3秒預備倒數、自由旋律手動提早結束)
+  async function startSmartCapture(meterBox, meterBar, btnElement, statusText, isMelody) {
+    btnElement.disabled = false;
+    btnElement.dataset.isRecording = 'false';
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+
+    // 1. 預備倒數：改為 3 秒
+    btnElement.classList.remove('recorded');
+    btnElement.classList.add('preparing');
+    let prepSec = 3;
+    statusText.innerText = `準備就緒 ${prepSec}s...`;
+
+    await new Promise((resolve) => {
+      const pInt = setInterval(() => {
+        prepSec--;
+        if (prepSec > 0) {
+          statusText.innerText = `準備就緒 ${prepSec}s...`;
+        } else {
+          clearInterval(pInt);
+          resolve();
+        }
+      }, 1000);
+    });
+
+    // 2. 正式收音 (空弦 3 秒 / 自由旋律最長 10 秒)
+    btnElement.classList.remove('preparing');
+    btnElement.classList.add('recording');
+    btnElement.dataset.isRecording = 'true';
+    meterBox.style.display = 'block';
+    meterBar.style.width = '0%';
+
+    const maxDuration = isMelody ? 10000 : 3000;
+    const stopFnName = `stop_rec_${Date.now()}`;
+    btnElement.dataset.stopHandler = stopFnName;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Float32Array(bufferLength);
+    const timeDomainArray = new Float32Array(analyser.fftSize);
+    const sampleRate = audioCtx.sampleRate;
+    const binWidth = sampleRate / analyser.fftSize;
+
+    let totalCentroid = 0, totalWarmth = 0, totalPurity = 0, rmsList = [], frameCount = 0;
+    const startTime = Date.now();
+
+    return new Promise((resolve) => {
+      let isDone = false;
+
+      function finalize() {
+        if (isDone) return;
+        isDone = true;
+        clearInterval(recordInterval);
+        delete window[stopFnName];
+        btnElement.dataset.isRecording = 'false';
+        delete btnElement.dataset.stopHandler;
+
+        stream.getTracks().forEach(t => t.stop());
+        audioCtx.close();
+        meterBox.style.display = 'none';
+
+        const avgCentroid = totalCentroid / (frameCount || 1);
+        const avgWarmth = totalWarmth / (frameCount || 1);
+        const avgPurity = totalPurity / (frameCount || 1);
+        const avgRms = rmsList.reduce((a, b) => a + b, 0) / (rmsList.length || 1);
+        const stdRms = Math.sqrt(rmsList.reduce((acc, val) => acc + Math.pow(val - avgRms, 2), 0) / (rmsList.length || 1));
+        const resonance = Math.max(0, Math.min(1, 1 - (stdRms / (avgRms + 1e-6))));
+
+        resolve({
+          brightness: Math.round(Math.min(95, Math.max(10, avgCentroid / 30))),
+          warmth: Math.round(Math.min(95, Math.max(10, avgWarmth * 110))),
+          resonance: Math.round(Math.min(95, Math.max(10, resonance * 95))),
+          purity: Math.round(Math.min(95, Math.max(10, avgPurity * 95)))
+        });
+      }
+
+      // 提供外部主動停止 (提前點擊結束)
+      window[stopFnName] = () => {
+        finalize();
+      };
+
+      const recordInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(100, (elapsed / maxDuration) * 100);
+        meterBar.style.width = progress + '%';
+
+        const leftSec = ((maxDuration - elapsed) / 1000).toFixed(1);
+        if (isMelody) {
+          statusText.innerText = `⏹ 點此結束 (${leftSec}s)`;
+        } else {
+          statusText.innerText = `錄音中 ${leftSec}s`;
+        }
+
+        analyser.getFloatFrequencyData(dataArray);
+        analyser.getFloatTimeDomainData(timeDomainArray);
+
+        // 排除前 0.3 秒雜音，擷取有效震動
+        if (elapsed > 300) {
+          let sumAmp = 0, weightedSum = 0, lowFreqEnergy = 0, totalEnergy = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            let amp = Math.pow(10, dataArray[i] / 20);
+            let freq = i * binWidth;
+            sumAmp += amp;
+            weightedSum += amp * freq;
+            let pwr = amp * amp;
+            totalEnergy += pwr;
+            if (freq < 1200) lowFreqEnergy += pwr;
+          }
+          let centroid = sumAmp > 0 ? (weightedSum / sumAmp) : 0;
+          totalCentroid += centroid;
+          let warmth = totalEnergy > 0 ? (lowFreqEnergy / totalEnergy) : 0;
+          totalWarmth += warmth;
+
+          let rmsSum = 0;
+          for (let i = 0; i < timeDomainArray.length; i++) {
+            rmsSum += timeDomainArray[i] * timeDomainArray[i];
+          }
+          rmsList.push(Math.sqrt(rmsSum / timeDomainArray.length));
+
+          let maxAmp = Math.max(...dataArray);
+          let purity = Math.min(1, Math.max(0, (maxAmp + 80) / 70));
+          totalPurity += purity;
+          frameCount++;
+        }
+
+        if (elapsed >= maxDuration) {
+          finalize();
+        }
+      }, 50);
+    });
+  }
+
+  // 點擊「點此進行 AI 音色分析」按鈕
+  startAnalysisBtn.onclick = () => {
+    // 1. 跳出 2 秒計算動畫彈窗
+    calcModal.style.display = 'flex';
+    calcProgressBar.style.width = '0%';
+
+    const startTime = Date.now();
+    const duration = 2000;
+
+    const calcTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / duration) * 100);
+      calcProgressBar.style.width = pct + '%';
+
+      if (elapsed >= duration) {
+        clearInterval(calcTimer);
+        calcModal.style.display = 'none';
+        showReportModal();
+      }
+    }, 40);
+  };
+
+  // 顯示報告彈窗與繪製雷達圖
+  function showReportModal() {
+    reportModal.style.display = 'flex';
+
+    // 彙整整把琴特徵 (空弦平均 75% + 自由旋律 25%)
+    function aggregateProfile(dataObj) {
+      const instStrings = INSTRUMENTS[currentKey].strings;
+      let b = 0, w = 0, r = 0, p = 0;
+      let count = 0;
+
+      instStrings.forEach(s => {
+        if (dataObj[s.id]) {
+          b += dataObj[s.id].brightness;
+          w += dataObj[s.id].warmth;
+          r += dataObj[s.id].resonance;
+          p += dataObj[s.id].purity;
+          count++;
+        }
+      });
+
+      let avg = {
+        brightness: b / (count || 1),
+        warmth: w / (count || 1),
+        resonance: r / (count || 1),
+        purity: p / (count || 1)
+      };
+
+      // 若有錄自由旋律，結合動態加權
+      if (dataObj.melody) {
+        avg.brightness = avg.brightness * 0.75 + dataObj.melody.brightness * 0.25;
+        avg.warmth = avg.warmth * 0.75 + dataObj.melody.warmth * 0.25;
+        avg.resonance = avg.resonance * 0.75 + dataObj.melody.resonance * 0.25;
+        avg.purity = avg.purity * 0.75 + dataObj.melody.purity * 0.25;
+      }
+
+      return {
+        brightness: Math.round(avg.brightness),
+        warmth: Math.round(avg.warmth),
+        resonance: Math.round(avg.resonance),
+        purity: Math.round(avg.purity)
+      };
     }
 
-    function copyOutput() {
-      const text = document.getElementById('outputContent').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyBtn');
-        btn.innerText = '已複製！';
-        setTimeout(() => { btn.innerText = '複製內文'; }, 2000);
+    const t = aggregateProfile(targetData);
+    const c = aggregateProfile(candidateData);
+
+    const diffB = Math.abs(t.brightness - c.brightness);
+    const diffW = Math.abs(t.warmth - c.warmth);
+    const diffR = Math.abs(t.resonance - c.resonance);
+    const diffP = Math.abs(t.purity - c.purity);
+    const avgDiff = (diffB + diffW + diffR + diffP) / 4;
+    const similarity = Math.max(0, Math.min(100, Math.round(100 - avgDiff * 1.15)));
+
+    document.getElementById('similarityScore').innerText = `${similarity} %`;
+
+    let verdict = '各頻段能量分佈極為均勻，與目標琴音色結構高度吻合。';
+    if (similarity < 82) {
+      if (c.brightness > t.brightness + 7) verdict = '待測琴高頻更為明亮，整體聽感較目標琴清亮、穿透力強。';
+      else if (c.warmth > t.warmth + 7) verdict = '待測琴低頻共鳴豐沛，整體聽感較目標琴更為厚實溫暖。';
+      else verdict = '兩把琴在箱體共鳴與高階泛音結構上有可辨識之風格差異。';
+    }
+    document.getElementById('verdictText').innerText = verdict;
+
+    // 繪製雷達圖
+    const ctx = document.getElementById('timbreRadarChart').getContext('2d');
+    const chartData = {
+      labels: [
+        ['明亮度', '(高頻穿透)'],
+        ['渾厚度', '(低頻共鳴)'],
+        ['延音共鳴', '(餘音平穩)'],
+        ['音質純淨', '(諧波純度)']
+      ],
+      datasets: [
+        {
+          label: '目標琴 (Target)',
+          data: [t.brightness, t.warmth, t.resonance, t.purity],
+          borderColor: '#1e88e5',
+          backgroundColor: 'rgba(30, 136, 229, 0.25)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#1e88e5',
+          pointRadius: 4
+        },
+        {
+          label: '待測候選琴 (Candidate)',
+          data: [c.brightness, c.warmth, c.resonance, c.purity],
+          borderColor: '#e53935',
+          backgroundColor: 'rgba(229, 57, 53, 0.18)',
+          borderDash: [6, 4],
+          borderWidth: 2.5,
+          pointBackgroundColor: '#e53935',
+          pointRadius: 4
+        }
+      ]
+    };
+
+    if (chartInstance) {
+      chartInstance.data = chartData;
+      chartInstance.update();
+    } else {
+      chartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 16 },
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 25, display: true, font: { size: 11 }, color: '#94a3b8', backdropColor: 'transparent' },
+              grid: { color: '#cbd5e1' },
+              angleLines: { color: '#cbd5e1' },
+              pointLabels: {
+                font: { size: 15, weight: '600', family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft JhengHei', sans-serif" },
+                color: '#0f172a',
+                padding: 14
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 14, weight: '600' }, padding: 18, boxWidth: 22, boxHeight: 12 }
+            }
+          }
+        }
       });
     }
-  </script>
+  }
+
+  // 關閉報告返回主頁面（指紋皆保留）
+  closeReportBtn.onclick = () => {
+    reportModal.style.display = 'none';
+  };
+
+  // 啟動初始化
+  initModal();
+</script>
 </body>
 </html>
